@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 using System.Xml;
 using System.IO;
 using Npgsql;
-using Youtube_Collections_Server.Model.Object_Holder_Models;
-using Youtube_Collections_Server.Model.Database_Models;
-using Youtube_Collections_Server.Model.Api_Models;
+using YoutubeCollectionsRevampServer.Model.Object_Holder_Models;
+using YoutubeCollectionsRevampServer.Model.Database_Models;
+using YoutubeCollectionsRevampServer.Model.Api_Models;
 
 using Google.Apis.Auth.OAuth2;
 using Google.Apis.Services;
@@ -25,7 +25,7 @@ using YoutubeCollectionsRevampServer.Models;
 
 
 
-namespace Youtube_Collections_Server.Controllers.Youtube_Tasks
+namespace YoutubeCollectionsRevampServer.Controllers.Youtube_Tasks
 {
     public class YoutubeTasks
     {

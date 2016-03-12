@@ -5,9 +5,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Youtube_Collections_Server.Model.Object_Holder_Models;
+using YoutubeCollectionsRevampServer.Model.Object_Holder_Models;
 
-namespace Youtube_Collections_Server.Model.Object_Holder_Models
+namespace YoutubeCollectionsRevampServer.Model.Object_Holder_Models
 {
     public class ChannelHolder : ObjectHolder
     {
