@@ -5,10 +5,10 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
-using YoutubeCollectionsRevampServer.Model.Object_Holder_Models;
+using YoutubeCollectionsRevampServer.Models.ObjectHolderModels;
 using System.Diagnostics;
 
-namespace YoutubeCollectionsRevampServer.Model.Database_Models
+namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 {
     public class DBHandler
     {

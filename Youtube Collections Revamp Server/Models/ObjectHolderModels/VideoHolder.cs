@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 
-namespace YoutubeCollectionsRevampServer.Model.Object_Holder_Models
+namespace YoutubeCollectionsRevampServer.Models.ObjectHolderModels
 {
     public class VideoHolder : ObjectHolder
     {

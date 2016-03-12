@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using YoutubeCollectionsRevampServer.Model.Object_Holder_Models;
+using YoutubeCollectionsRevampServer.Models.ObjectHolderModels;
 
-namespace YoutubeCollectionsRevampServer.Model.Database_Models
+namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 {
     public class SqlBuilder
     {

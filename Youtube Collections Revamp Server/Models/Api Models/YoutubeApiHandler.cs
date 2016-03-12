@@ -11,7 +11,7 @@ using Google.Apis.Util.Store;
 using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
 
-namespace YoutubeCollectionsRevampServer.Model.Api_Models
+namespace YoutubeCollectionsRevampServer.Models.ApiModels
 {
     public class YoutubeApiHandler
     {
