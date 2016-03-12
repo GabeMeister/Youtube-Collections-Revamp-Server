@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 
-namespace Youtube_Collections_Revamp_Server.Models
+namespace YoutubeCollectionsRevampServer.Models
 {
     public class SignalRMessage
     {

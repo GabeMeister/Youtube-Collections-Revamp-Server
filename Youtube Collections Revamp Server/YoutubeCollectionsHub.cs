@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
@@ -6,9 +6,9 @@ using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using System.Threading;
 using Youtube_Collections_Server.Controllers.Youtube_Tasks;
-using Youtube_Collections_Revamp_Server.Models;
+using YoutubeCollectionsRevampServer.Models;
 
-namespace Youtube_Collections_Revamp_Server
+namespace YoutubeCollectionsRevampServer
 {
     [HubName("YoutubeCollectionsServer")]
     public class YoutubeCollectionsHub : Hub

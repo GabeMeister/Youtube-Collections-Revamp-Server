@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -18,8 +18,8 @@ using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
 using System.Diagnostics;
 using Microsoft.AspNet.SignalR;
-using Youtube_Collections_Revamp_Server;
-using Youtube_Collections_Revamp_Server.Models;
+using YoutubeCollectionsRevampServer;
+using YoutubeCollectionsRevampServer.Models;
 
 
 

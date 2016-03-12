@@ -1,11 +1,11 @@
-﻿using System;
+using System;
 using System.Threading.Tasks;
 using Microsoft.Owin;
 using Owin;
 
-[assembly: OwinStartup(typeof(Youtube_Collections_Revamp_Server.Startup))]
+[assembly: OwinStartup(typeof(YoutubeCollectionsRevampServer.Startup))]
 
-namespace Youtube_Collections_Revamp_Server
+namespace YoutubeCollectionsRevampServer
 {
     public class Startup
     {
