@@ -8,15 +8,18 @@ using System.Threading;
 using YoutubeCollectionsRevampServer.Controllers.YoutubeTasks;
 using YoutubeCollectionsRevampServer.Models;
 using YoutubeCollectionsRevampServer.Models.SignalRMessaging;
+using System.Web.Caching;
 
 namespace YoutubeCollectionsRevampServer
 {
     [HubName("YoutubeCollectionsServer")]
     public class YoutubeCollectionsHub : Hub
     {
+        private static CacheItemRemovedCallback _onCacheRemove = null;
+
         public YoutubeCollectionsHub()
         {
-
+            _onCacheRemove = new CacheItemRemovedCallback(CacheItemRemoved);
         }
 
         #region SignalR Communication
@@ -31,6 +34,20 @@ namespace YoutubeCollectionsRevampServer
             YoutubeTasks.FetchAndInsertChannelSubscriptions(this, youtubeId);
             this.Clients.Caller.onSubscriptionsInserted();
         }
+
+
+
+        public void ModifyHttpCache()
+        {
+            HttpRuntime.Cache.Insert("TestItem", 1, null, DateTime.Now.AddSeconds(1), Cache.NoSlidingExpiration, CacheItemPriority.NotRemovable, _onCacheRemove);
+        }
+
+        public void CacheItemRemoved(string k, object v, CacheItemRemovedReason r)
+        {
+            this.Clients.Caller.onCacheRemoved("Removed!");
+        }
+
+
         #endregion
 
 

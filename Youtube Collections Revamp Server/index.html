@@ -1,9 +1,28 @@
 ﻿<!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
-    <title></title>
+    <title>Youtube Collections Revamp Server</title>
 </head>
 <body>
-    <h1>Hi!</h1>
+    <h1 id="headline">Hi!</h1>
+    <button id="startBtn">Start</button>
+
+    <script src="Scripts/jquery-2.2.1.js"></script>
+    <script src="Scripts/jquery.signalR-2.2.0.js"></script>
+    <script>
+        var HUB_SERVER_URL = 'http://localhost:3851/signalr';
+        var _hubConnection = $.hubConnection(HUB_SERVER_URL);
+        var _hub = _hubConnection.createHubProxy('YoutubeCollectionsServer');
+        _hub.on('onCacheRemoved', onCacheRemoved);
+        _hubConnection.start();
+
+        $('#startBtn').click(function () {
+            _hub.invoke('ModifyHttpCache');
+        });
+
+        function onCacheRemoved(msg) {
+            $('#startBtn').text(msg);
+        }
+    </script>
 </body>
 </html>
