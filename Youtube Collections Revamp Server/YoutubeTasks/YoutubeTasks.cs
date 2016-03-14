@@ -99,7 +99,15 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
 
         }
 
-        
+        public static void InsertCollection(string collectionName, string youtubeId)
+        {
+            int channelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", youtubeId);
+
+            var collectionToInsert = new CollectionHolder(collectionName, youtubeId, channelId);
+
+            DBHandler.InsertCollection(collectionToInsert);
+
+        }
 
 
 

@@ -232,12 +232,8 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
             // Check that the owner channel id exists
             bool exists = DoesItemExist("Channels", "ChannelID", collection.OwnerChannelId);
-
-            if (!exists)
-            {
-                throw new Exception("Unrecognized youtube channel id: " + collection.OwnerYoutubeChannelId);
-            }
-
+            Debug.Assert(exists, "InsertCollection(): Unrecognized youtube channel id: " + collection.OwnerYoutubeChannelId);
+            
             // Make sure there isn't already a collection with same name
             if (!DoesCollectionExist(collection.OwnerChannelId, collection.Title))
             {
@@ -251,10 +247,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                     NpgsqlCommand insertCommand = new NpgsqlCommand(insertSQL, conn);
                     rowsAffected = insertCommand.ExecuteNonQuery();
 
-                    if (rowsAffected < 1)
-                    {
-                        throw new Exception("Collection insert didn't complete correctly.");
-                    }
+                    Debug.Assert(rowsAffected > 0, "Collection insert didn't complete correctly.");
 
                     conn.Close();
                 }

@@ -22,6 +22,7 @@ namespace YoutubeCollectionsRevampServer
             _onCacheRemove = new CacheItemRemovedCallback(CacheItemRemoved);
         }
 
+
         #region SignalR Communication
         public void InsertYoutubeId(string youtubeId)
         {
@@ -33,6 +34,11 @@ namespace YoutubeCollectionsRevampServer
         {
             YoutubeTasks.FetchAndInsertChannelSubscriptions(this, youtubeId);
             this.Clients.Caller.onSubscriptionsInserted();
+        }
+
+        public void InsertCollection(string collectionName, string youtubeId)
+        {
+            YoutubeTasks.InsertCollection(collectionName, youtubeId);
         }
 
 

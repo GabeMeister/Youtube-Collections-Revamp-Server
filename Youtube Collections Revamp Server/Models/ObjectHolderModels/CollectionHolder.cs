@@ -12,5 +12,12 @@ namespace YoutubeCollectionsRevampServer.Models.ObjectHolderModels
         public int OwnerChannelId { get; set; }
         public string OwnerYoutubeChannelId { get; set; }
         public string Title { get; set; }
+
+        public CollectionHolder(string title, string ownerYoutubeChannelId, int ownerChannelId)
+        {
+            OwnerChannelId = ownerChannelId;
+            OwnerYoutubeChannelId = ownerYoutubeChannelId;
+            Title = title;
+        }
     }
 }
