@@ -24,5 +24,4 @@ order by count(*) desc;
 -- -- where c.YoutubeID='UC8-Th83bH_thdKZDJCrn88g'
 -- where c.ChannelID=117;
 
-
-select * from channels limit 5;
+select count(*) from channels;

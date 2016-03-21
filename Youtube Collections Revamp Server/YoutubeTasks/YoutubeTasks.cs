@@ -85,7 +85,7 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
                         }
 
 
-                        var message = new SubscriptionInsertMessage(++subscriptionIndex, subscriptionCount, beingSubscribedToChannelId, title);
+                        var message = new SubscriptionInsertMessage(++subscriptionIndex, subscriptionCount, beingSubscribedToYoutubeId, title);
                         hub.NotifyCaller(message);
                         DBHandler.InsertSubscription(subscriberChannelId, beingSubscribedToChannelId);
                         
@@ -109,10 +109,54 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
 
         }
 
+        public static void InsertCollectionItem(string collectionItemYoutubeId, string collectionTitle, string userYoutubeId)
+        {
+            // Get the user Id
+            int userChannelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
+            Debug.Assert(userChannelId > 0, "Inserting collection item into collection with non-existant channel id.");
+
+            // Get collection id
+            int collectionId = DBHandler.SelectCollectionIdByChannelIdAndTitle(userChannelId, collectionTitle);
+            Debug.Assert(collectionId > 0, "Couldn't find correct collection by id");
+
+            // Get the collection item id
+            int collectionItemId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", collectionItemYoutubeId);
+            Debug.Assert(collectionItemId > 0, "Couldn't find collection item channel id");
+
+            // Insert collection item
+            DBHandler.InsertCollectionItem(collectionItemId, collectionId);
+
+
+        }
 
 
 
 
+        public static void CompletelyDeleteChannel(string youtubeChannelId)
+        {
+            // Get the database channel id
+            int channelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", youtubeChannelId);
+
+            // Delete the channel's collections
+            DBHandler.DeleteChannelCollections(channelId);
+
+            // Delete the channel's uploads videos
+            DBHandler.DeleteChannelVideos(channelId);
+
+            // Delete the channel's watched videos
+            DBHandler.DeleteChannelWatchedVideos(channelId);
+
+            // Delete the channel's subscriptions
+            DBHandler.DeleteChannelSubscriptions(channelId);
+
+            // Delete subscriptions to the channel
+            DBHandler.DeleteSubscriptionsToChannel(channelId);
+
+            // Delete the channel itself
+            DBHandler.DeleteChannel(channelId);
+
+
+        }
 
 
 

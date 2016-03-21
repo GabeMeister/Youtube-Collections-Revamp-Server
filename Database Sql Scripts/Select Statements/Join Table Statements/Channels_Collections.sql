@@ -9,3 +9,6 @@ where ch.YoutubeID='UC4LVLoBN0xbOb5xJuA0ia9A';
 -- select * from Collections;
 -- 
 -- select * from Channels where ChannelID=57781;
+
+-- TODO
+delete from collections where ownerchannelid=57781;
