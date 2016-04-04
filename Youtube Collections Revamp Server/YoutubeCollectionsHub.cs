@@ -46,11 +46,24 @@ namespace YoutubeCollectionsRevampServer
             YoutubeTasks.InsertCollectionItem(collectionItemYoutubeId, collectionTitle, userYoutubeId);
         }
 
+        public void DeleteCollectionItem(string collectionItemYoutubeId, string collectionTitle, string userYoutubeId)
+        {
+            YoutubeTasks.DeleteCollectionItem(collectionItemYoutubeId, collectionTitle, userYoutubeId);
+        }
+
         public void RestartInitialization()
         {
             // Delete Gabe's channel
             YoutubeTasks.CompletelyDeleteChannel("UC4LVLoBN0xbOb5xJuA0ia9A");
         }
+
+        public void RestartCollectionItems()
+        {
+            // Delete all collection items from Gabe's channel
+            YoutubeTasks.DeleteChannelCollectionItems("UC4LVLoBN0xbOb5xJuA0ia9A");
+        }
+
+
 
 
         public void ModifyHttpCache()

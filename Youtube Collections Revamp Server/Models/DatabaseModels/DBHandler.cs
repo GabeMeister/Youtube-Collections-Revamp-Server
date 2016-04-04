@@ -511,10 +511,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
             // Check that the collection item exists
             bool exists = DoesCollectionItemExist(collectionId, itemChannelId);
-            if (!exists)
-            {
-                throw new Exception("Trying to delete non-existant collection item.");
-            }
+            Debug.Assert(exists, "Trying to delete non-existant collection item.");
 
             // Delete the collection item
             using (NpgsqlConnection conn = new NpgsqlConnection(DatabaseConnStr))
@@ -524,11 +521,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                 string deleteSql = SqlBuilder.DeleteCollectionItemSql(collectionId, itemChannelId);
                 NpgsqlCommand deleteCommand = new NpgsqlCommand(deleteSql, conn);
                 rowsAffected = deleteCommand.ExecuteNonQuery();
-
-                if (rowsAffected < 1)
-                {
-                    throw new Exception("Collection item delete didn't complete correctly.");
-                }
+                Debug.Assert(rowsAffected > 0, "Collection item delete didn't complete correctly.");
 
                 conn.Close();
             }
@@ -576,6 +569,39 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                 deleteCommand.ExecuteReader();
 
                 conn.Close();
+            }
+        }
+
+        public static void DeleteChannelCollectionItems(int channelId)
+        {
+            Debug.Assert(DoesItemExist("Channels", "ChannelID", channelId), "Deleting collections from non-existant channel");
+
+            List<int> collectionIds = new List<int>();
+
+            // Get all collections for channel
+            using (NpgsqlConnection conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                string selectSql = string.Format("select CollectionID from Collections where OwnerChannelId={0};", Sanitize(channelId));
+                NpgsqlCommand selectCommand = new NpgsqlCommand(selectSql, conn);
+
+                // The user may have no collections, so returning no rows affected is ok
+                NpgsqlDataReader reader = selectCommand.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int collectionId = Convert.ToInt32(reader["CollectionID"].ToString().Trim());
+                    collectionIds.Add(collectionId);
+                }
+
+                conn.Close();
+            }
+
+            // Iterate through all collections and delete one at a time
+            foreach (int collectionId in collectionIds)
+            {
+                DeleteCollectionItemsForCollection(collectionId);
             }
         }
 

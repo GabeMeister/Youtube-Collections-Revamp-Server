@@ -120,22 +120,39 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
             Debug.Assert(collectionId > 0, "Couldn't find correct collection by id");
 
             // Get the collection item id
-            int collectionItemId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", collectionItemYoutubeId);
-            Debug.Assert(collectionItemId > 0, "Couldn't find collection item channel id");
+            int collectionItemChannelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", collectionItemYoutubeId);
+            Debug.Assert(collectionItemChannelId > 0, "Couldn't find collection item channel id");
 
             // Insert collection item
-            DBHandler.InsertCollectionItem(collectionItemId, collectionId);
+            DBHandler.InsertCollectionItem(collectionItemChannelId, collectionId);
 
 
         }
 
+        public static void DeleteCollectionItem(string collectionItemYoutubeId, string collectionTitle, string userYoutubeId)
+        {
+            // Get the user Id
+            int userChannelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
+            Debug.Assert(userChannelId > 0, "Inserting collection item into collection with non-existant channel id.");
 
+            // Get collection id
+            int collectionId = DBHandler.SelectCollectionIdByChannelIdAndTitle(userChannelId, collectionTitle);
+            Debug.Assert(collectionId > 0, "Couldn't find correct collection by id");
+
+            // Get the collection item id
+            int collectionItemChannelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", collectionItemYoutubeId);
+            Debug.Assert(collectionItemChannelId > 0, "Couldn't find collection item channel id");
+
+            // Delete collection item
+            DBHandler.DeleteCollectionItem(collectionId, collectionItemChannelId);
+        }
 
 
         public static void CompletelyDeleteChannel(string youtubeChannelId)
         {
             // Get the database channel id
             int channelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", youtubeChannelId);
+            Debug.Assert(channelId > 0, "Non existant channel id.");
 
             // Delete the channel's collections
             DBHandler.DeleteChannelCollections(channelId);
@@ -158,6 +175,15 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
 
         }
 
+        public static void DeleteChannelCollectionItems(string youtubeChannelId)
+        {
+            // Get the database channel id
+            int channelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", youtubeChannelId);
+            Debug.Assert(channelId > 0, "Non existant channel id.");
+
+            DBHandler.DeleteChannelCollectionItems(channelId);
+
+        }
 
 
 
