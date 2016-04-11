@@ -26,7 +26,7 @@ namespace YoutubeCollectionsRevampServer
         #region SignalR Communication
         public void InsertYoutubeId(string youtubeId)
         {
-            YoutubeTasks.InsertYoutubeIdIntoDatabase(youtubeId);
+            YoutubeTasks.InsertYoutubeChannelIdIntoDatabase(youtubeId);
             this.Clients.Caller.onChannelIdInserted();
         }
 
@@ -49,6 +49,11 @@ namespace YoutubeCollectionsRevampServer
         public void DeleteCollectionItem(string collectionItemYoutubeId, string collectionTitle, string userYoutubeId)
         {
             YoutubeTasks.DeleteCollectionItem(collectionItemYoutubeId, collectionTitle, userYoutubeId);
+        }
+
+        public void InsertWatchedVideo(string youtubeVideoId, string userYoutubeId, string dateViewed)
+        {
+            YoutubeTasks.InsertWatchedVideo(youtubeVideoId, userYoutubeId, dateViewed);
         }
 
         public void RestartInitialization()

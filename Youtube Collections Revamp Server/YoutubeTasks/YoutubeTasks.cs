@@ -22,9 +22,6 @@ using Microsoft.AspNet.SignalR;
 
 
 
-
-
-
 namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
 {
     public class YoutubeTasks
@@ -34,7 +31,7 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
 
         #region BEING USED
 
-        public static ChannelHolder InsertYoutubeIdIntoDatabase(string youtubeId)
+        public static ChannelHolder InsertYoutubeChannelIdIntoDatabase(string youtubeId)
         {
             ChannelHolder channel = null;
             ChannelListResponse channelResponse = YoutubeApiHandler.FetchUploadsPlaylistByChannel(youtubeId, "snippet,contentDetails,statistics");
@@ -80,7 +77,7 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
                         if (beingSubscribedToChannelId == -1)
                         {
                             // Channel hasn't been inserted into database yet.
-                            InsertYoutubeIdIntoDatabase(beingSubscribedToYoutubeId);
+                            InsertYoutubeChannelIdIntoDatabase(beingSubscribedToYoutubeId);
                             beingSubscribedToChannelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", beingSubscribedToYoutubeId);
                         }
 
@@ -185,6 +182,42 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
 
         }
 
+        public static void InsertWatchedVideo(string youtubeVideoId, string userYoutubeId, string dateViewed)
+        {
+            int channelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
+            
+            if (!DBHandler.DoesItemExist("Videos", "YoutubeID", youtubeVideoId))
+            {
+                // Might not have video, we need to fetch it's information
+                // and insert it's meta-data into the database
+                FetchVideoInfo(youtubeVideoId);
+            }
+
+            int videoId = DBHandler.RetrieveIdFromYoutubeId("VideoID", "Videos", youtubeVideoId);
+
+            DBHandler.InsertWatchedVideo(videoId, channelId, dateViewed);
+        }
+
+        public static void FetchVideoInfo(string videoIds)
+        {
+            VideoListResponse videos = YoutubeApiHandler.FetchVideoById(videoIds, "snippet,contentDetails,statistics");
+
+            foreach (var videoResponse in videos.Items)
+            {
+                VideoHolder video = new VideoHolder(videoResponse);
+                
+                int channelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", video.YoutubeChannelId);
+                if (channelId < 0)
+                {
+                    // Channel doesn't exist in database, we need to insert the channel meta-data
+                    // before inserting the video data
+                    InsertYoutubeChannelIdIntoDatabase(video.YoutubeChannelId);
+                }
+                
+                DBHandler.InsertVideo(video);
+            }
+        }
+
 
 
         #endregion
@@ -220,7 +253,7 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
         public static void FetchChannelUploads(string youtubeId)
         {
             int vidCount = 0;
-            ChannelHolder channel = InsertYoutubeIdIntoDatabase(youtubeId);
+            ChannelHolder channel = InsertYoutubeChannelIdIntoDatabase(youtubeId);
             Console.WriteLine("************* " + channel.Title + " | " + channel.YoutubeId + " *************");
 
             string nextPageToken = string.Empty;
@@ -294,23 +327,7 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
             //t5.Join();
             //t6.Join();
         }
-
-        public static void FetchVideoInfo(string videoIds)
-        {
-            VideoListResponse videos = YoutubeApiHandler.FetchVideoById(videoIds, "snippet,contentDetails,statistics");
-
-            foreach(var videoResponse in videos.Items)
-            {
-                VideoHolder video = new VideoHolder(videoResponse);
-                //DBHandler.InsertVideo(video);
-
-                Console.WriteLine("{0}: {1}", video.YoutubeChannelId, video.Title);
-            }
-
-            //Console.Write("█");
-            
-        }
-
+        
         public static void FetchChannelUploadsFromStream(StreamReader reader)
         {
             using (reader)

@@ -624,29 +624,22 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                     conn.Open();
 
                     // Have to get the actual channel id first, from the youtube id
-                    string selectSql = SqlBuilder.SelectByIdSql("ChannelID", "Channels", "YoutubeID", video.YoutubeChannelId);
-                    NpgsqlCommand selectCommand = new NpgsqlCommand(selectSql, conn);
-                    NpgsqlDataReader reader = selectCommand.ExecuteReader();
-                    reader.Read();
-                    video.ChannelId = Convert.ToUInt64(reader["ChannelID"].ToString().Trim());
-                    reader.Close();
+                    // The channel id may or may not be in database already
+                    video.ChannelId = Convert.ToUInt64(RetrieveIdFromYoutubeId("ChannelID", "Channels", video.YoutubeChannelId));
+                    Debug.Assert(video.ChannelId > 0, "Inserting video of non-existant channel. Channel must have been already inserted before this point.");
 
                     string insertSQL = SqlBuilder.InsertVideoSql(video);
                     NpgsqlCommand insertCommand = new NpgsqlCommand(insertSQL, conn);
                     rowsAffected = insertCommand.ExecuteNonQuery();
-
-                    if (rowsAffected < 1)
-                    {
-                        throw new Exception("Video insert didn't complete correctly.");
-                    }
-
+                    Debug.Assert(rowsAffected > 0, "Video insert didn't complete correctly.");
+                    
                     conn.Close();
                 }
             }
 
             return rowsAffected;
         }
-
+        
         public static void DeleteChannelVideos(int channelId)
         {
             Debug.Assert(DoesItemExist("Channels", "ChannelID", channelId), "Deleting videos of non-existant channel");
@@ -688,6 +681,60 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         #endregion
 
+        // ============================ WATCHED VIDEOS
+        #region WATCHED VIDEOS
+
+        public static void InsertWatchedVideo(int videoId, int channelId, string dateViewed)
+        {
+
+            if (!DoesWatchedVideoExist(videoId, channelId))
+            {
+                using (NpgsqlConnection conn = new NpgsqlConnection(DatabaseConnStr))
+                {
+                    conn.Open();
+
+                    string insertSql = string.Format("insert into WatchedVideos (ChannelID, VideoID, DateViewed) values ({0}, {1}, '{2}');", 
+                        Sanitize(channelId), Sanitize(videoId), Sanitize(dateViewed));
+                    var command = new NpgsqlCommand(insertSql, conn);
+                    
+                    int rowsAffected = command.ExecuteNonQuery();
+                    Debug.Assert(rowsAffected > 0, "Unable to insert watched video");
+
+                    conn.Close();
+                }
+            }
+
+        }
+
+        public static bool DoesWatchedVideoExist(int videoId, int channelId)
+        {
+            bool doesExist = false;
+
+            using (NpgsqlConnection conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                string selectSql = "select count(*) from WatchedVideos where ChannelID=:channelId and VideoID=:videoId;";
+                NpgsqlCommand selectCommand = new NpgsqlCommand(selectSql, conn);
+                selectCommand.Parameters.Add(new NpgsqlParameter("channelId", NpgsqlDbType.Integer));
+                selectCommand.Parameters.Add(new NpgsqlParameter("videoId", NpgsqlDbType.Integer));
+                selectCommand.Parameters[0].Value = channelId;
+                selectCommand.Parameters[1].Value = videoId;
+
+                int count = Convert.ToInt16(selectCommand.ExecuteScalar());
+
+                if (count > 0)
+                {
+                    doesExist = true;
+                }
+
+                conn.Close();
+            }
+
+            return doesExist;
+        }
+
+        #endregion
 
 
 
