@@ -68,6 +68,11 @@ namespace YoutubeCollectionsRevampServer
             YoutubeTasks.DeleteChannelCollectionItems("UC4LVLoBN0xbOb5xJuA0ia9A");
         }
 
+        public void GetUnwatchedVideos(string userYoutubeId, List<string> youtubeIds)
+        {
+            YoutubeTasks.GetUnwatchedVideos(this, userYoutubeId, youtubeIds);
+        }
+
 
 
 
@@ -90,6 +95,11 @@ namespace YoutubeCollectionsRevampServer
         public void NotifyCaller(SignalRMessage message)
         {
             this.Clients.Caller.onProgressChanged(message);
+        }
+
+        public void SendUnrecognizedYoutubeVideoIds(SignalRMessage message)
+        {
+            this.Clients.Caller.onRelatedVideosChange(message);
         }
 
         #endregion

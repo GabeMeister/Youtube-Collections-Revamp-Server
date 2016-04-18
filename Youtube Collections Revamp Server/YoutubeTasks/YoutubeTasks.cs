@@ -218,6 +218,39 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
             }
         }
 
+        public static void GetUnwatchedVideos(YoutubeCollectionsHub hub, string userYoutubeId, List<string> youtubeVideoIds)
+        {
+            int channelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
+            Debug.Assert(channelId > 0, "Non existant channel id.");
+
+            List<string> unrecognizedVideoYoutubeIds = new List<string>();
+            List<int> recognizedVideoIds = new List<int>();
+
+            foreach(string youtubeVideoId in youtubeVideoIds)
+            {
+                int videoId = DBHandler.RetrieveIdFromYoutubeId("VideoID", "Videos", youtubeVideoId);
+                if (videoId < 0)
+                {
+                    // Video doesn't exist in database, we have to insert it
+                    // We assume unrecognized videos haven't been watched by the user.
+                    unrecognizedVideoYoutubeIds.Add(youtubeVideoId);
+                }
+                else
+                {
+                    recognizedVideoIds.Add(videoId);
+                }
+            }
+
+            // Insert unrecognized videos into database
+            FetchVideoInfo(string.Join(",", unrecognizedVideoYoutubeIds));
+
+            unrecognizedVideoYoutubeIds.AddRange(DBHandler.GetUnwatchedVideosForUser(channelId, recognizedVideoIds));
+
+            var message = new RelatedVideosMessage(unrecognizedVideoYoutubeIds);
+            hub.SendUnrecognizedYoutubeVideoIds(message);
+
+        }
+
 
 
         #endregion

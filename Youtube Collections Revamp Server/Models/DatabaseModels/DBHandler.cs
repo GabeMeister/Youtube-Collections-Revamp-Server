@@ -678,6 +678,8 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             }
         }
 
+        
+
 
         #endregion
 
@@ -732,6 +734,77 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             }
 
             return doesExist;
+        }
+
+        public static IEnumerable<string> GetWatchedVideosForUser(int channelId, IEnumerable<int> youtubeVideoIds)
+        {   
+            List<int> watchedVideoIds = new List<int>();
+            List<string> watchedYoutubeIds = new List<string>();
+
+            foreach(int videoId in youtubeVideoIds)
+            {
+                // We actually insert the video because we know it's not in the database
+                using (NpgsqlConnection conn = new NpgsqlConnection(DatabaseConnStr))
+                {
+                    conn.Open();
+
+                    string selectSQL = string.Format("select VideoID from WatchedVideos where ChannelID={0} and VideoID in ({1});", Sanitize(channelId), Sanitize(string.Join(",", youtubeVideoIds)));
+                    var selectCommand = new NpgsqlCommand(selectSQL, conn);
+                    NpgsqlDataReader reader = selectCommand.ExecuteReader();
+
+                    // Since we're returning the youtube id of the video, we convert the video ids back to youtube ids
+                    while(reader.Read())
+                    {
+                        int watchedVideoId = Convert.ToInt32(reader["VideoID"]);
+                        string watchedYoutubeId = RetrieveColumnBySingleCondition("YoutubeID", "Videos", "VideoID", watchedVideoId.ToString());
+
+                        watchedYoutubeIds.Add(watchedYoutubeId);
+                    }
+                    
+                    conn.Close();
+                }
+            }
+
+            return watchedYoutubeIds;
+        }
+
+        public static IEnumerable<string> GetUnwatchedVideosForUser(int channelId, IEnumerable<int> relatedVideoIds)
+        {
+            List<string> unwatchedYoutubeIds = new List<string>();
+            List<int> watchedVideoIds = new List<int>();
+
+            using (NpgsqlConnection conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                string selectSQL = string.Format("select VideoID from WatchedVideos where ChannelID='{0}' and VideoID in ({1});", Sanitize(channelId), Sanitize(string.Join(",", relatedVideoIds)));
+                var selectCommand = new NpgsqlCommand(selectSQL, conn);
+                NpgsqlDataReader reader = selectCommand.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int watchedVideoId = Convert.ToInt32(reader["VideoID"]);
+                    if (relatedVideoIds.Contains(watchedVideoId))
+                    {
+                        watchedVideoIds.Add(watchedVideoId);
+                    }
+                }
+
+                conn.Close();
+            }
+
+            // We get all the video ids that the user hasn't seen be calling Except() on the videos
+            // that the user has already seen
+            IEnumerable<int> unwatchedVideoIds = relatedVideoIds.Except(watchedVideoIds);
+
+            foreach(int videoId in unwatchedVideoIds)
+            {
+                // Since we're returning the youtube id of the video, we convert the video ids back to youtube ids
+                string youtubeId = RetrieveColumnBySingleCondition("YoutubeID", "Videos", "VideoID", videoId.ToString());
+                unwatchedYoutubeIds.Add(youtubeId);
+            }
+
+            return unwatchedYoutubeIds;
         }
 
         #endregion
