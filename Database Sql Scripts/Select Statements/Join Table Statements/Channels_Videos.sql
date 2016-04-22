@@ -25,3 +25,9 @@ order by count(*) desc;
 -- where c.ChannelID=117;
 
 select count(*) from channels;
+
+select * from Subscriptions;
+
+select * from channels where title like '%adeon%';
+
+select count(*) from watchedvideos;
