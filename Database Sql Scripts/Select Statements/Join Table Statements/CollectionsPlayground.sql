@@ -15,8 +15,8 @@ inner join Subscriptions s on s.SubscriberChannelID=c.ChannelID
 inner join Channels c2 on s.BeingSubscribedTochannelID=c2.ChannelID
 inner join Videos v on v.ChannelID=c2.ChannelID
 where 
-c.YoutubeID='UC4LVLoBN0xbOb5xJuA0ia9A' -- Gabe J channel
-and c2.YoutubeID in ('UCIKF1msqN7lW9gplsifOPkQ','UCMOgdURr7d8pOVlc-alkfRg')
+c.ChannelID=57810
+and c2.ChannelID=88
 and v.VideoID not in
 (
 select VideoId from WatchedVideos
@@ -27,4 +27,8 @@ limit 5;
 
 -- select * from Subscriptions;
 
--- select * from channels c where c.youtubeid like 'UC4LVLoBN0xbOb5xJuA0ia9A';
+select * from channels c where c.title like '%Madeon%';
+-- 
+-- select * from collections;
+-- 
+-- select * from CollectionItems;

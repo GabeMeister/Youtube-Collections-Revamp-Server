@@ -73,8 +73,10 @@ namespace YoutubeCollectionsRevampServer
             YoutubeTasks.GetUnwatchedVideos(this, userYoutubeId, youtubeIds);
         }
 
-
-
+        public void GetVideosForCollection(string userYoutubeId, string collectionTitle)
+        {
+            YoutubeTasks.GetVideosForCollection(this, userYoutubeId, collectionTitle);
+        }
 
         public void ModifyHttpCache()
         {
@@ -98,6 +100,11 @@ namespace YoutubeCollectionsRevampServer
         }
 
         public void SendUnrecognizedYoutubeVideoIds(SignalRMessage message)
+        {
+            this.Clients.Caller.onRelatedVideosChange(message);
+        }
+
+        public void SendCollectionVideos(SignalRMessage message)
         {
             this.Clients.Caller.onRelatedVideosChange(message);
         }

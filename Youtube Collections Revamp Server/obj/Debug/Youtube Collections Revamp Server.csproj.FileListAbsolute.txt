@@ -168,3 +168,4 @@ D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collectio
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\obj\Debug\Youtube Collections Revamp Server.csproj.App.config
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\obj\Debug\Youtube Collections Revamp Server.dll
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\obj\Debug\Youtube Collections Revamp Server.pdb
+D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\obj\Debug\Youtube Collections Revamp Server.csprojResolveAssemblyReference.cache

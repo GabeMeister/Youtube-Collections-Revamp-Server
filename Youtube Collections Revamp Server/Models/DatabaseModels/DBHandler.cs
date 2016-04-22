@@ -411,17 +411,11 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             {
                 conn.Open();
 
-                string selectSql = "select coll.CollectionID from Collections coll inner join Channels ch on ch.ChannelID = coll.OwnerChannelID where coll.OwnerChannelID=:id and coll.Title=:title;";
-                var command = new NpgsqlCommand(selectSql, conn);
-                command.Parameters.Add(new NpgsqlParameter("id", NpgsqlDbType.Integer));
-                command.Parameters.Add(new NpgsqlParameter("title", NpgsqlDbType.Varchar));
-                command.Parameters[0].Value = channelId;
-                command.Parameters[1].Value = title;
+                string selectSql = string.Format("select CollectionID from Collections where OwnerChannelID='{0}' and Title='{0}';", channelId, collectionTitle);
+                NpgsqlCommand command = new NpgsqlCommand(selectSql, conn);
                 NpgsqlDataReader reader = command.ExecuteReader();
-
+                Debug.Assert(reader.HasRows, "Collection not found");
                 reader.Read();
-
-                Debug.Assert(reader.HasRows, "Couldn't find correct collection.");
 
                 // We just want the collection id
                 collectionId = Convert.ToInt32(reader["CollectionID"].ToString().Trim());
@@ -605,6 +599,30 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             }
         }
 
+        public static List<int> SelectCollectionItemsByCollectionId(int collectionId)
+        {
+            List<int> collectionItemIds = new List<int>();
+            using (NpgsqlConnection conn = new NpgsqlConnection(DBHandler.DatabaseConnStr))
+            {
+                conn.Open();
+
+                string selectSql = string.Format("select ItemChannelID from CollectionItems where CollectionId={0};", collectionId);
+                NpgsqlCommand command = new NpgsqlCommand(selectSql, conn);
+                NpgsqlDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int collectionItemId = Convert.ToInt32(reader["ItemChannelID"].ToString());
+                    collectionItemIds.Add(collectionItemId);
+                }
+
+
+                conn.Close();
+            }
+
+            return collectionItemIds;
+        }
+
         #endregion
 
         // ============================ VIDEOS
@@ -678,7 +696,30 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             }
         }
 
-        
+        public static List<VideoHolder> SelectVideoInformationForVideoIds(IEnumerable<int> videoIds)
+        {
+            List<VideoHolder> collectionVideos = new List<VideoHolder>();
+            using (NpgsqlConnection conn = new NpgsqlConnection(DBHandler.DatabaseConnStr))
+            {
+                conn.Open();
+
+                string selectSql = string.Format(@"select v.YoutubeID, v.ChannelID, v.Title, v.Thumbnail, v.Duration, v.ViewCount, v.PublishedAt
+                                                    from Videos v 
+                                                    where v.VideoID in ({0});", string.Join(",", videoIds));
+                NpgsqlCommand command = new NpgsqlCommand(selectSql, conn);
+                NpgsqlDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    var video = new VideoHolder(reader);
+                    collectionVideos.Add(video);
+                }
+
+                conn.Close();
+            }
+
+            return collectionVideos;
+        }
 
 
         #endregion
@@ -805,6 +846,39 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             }
 
             return unwatchedYoutubeIds;
+        }
+
+        public static List<int> SelectUnwatchedVideoIdsForUserSubscription(int channelId, int subscriptionId, int numVideos)
+        {
+            List<int> collectionVideoIds = new List<int>();
+            using (NpgsqlConnection conn = new NpgsqlConnection(DBHandler.DatabaseConnStr))
+            {
+                conn.Open();
+
+                string selectSql = string.Format(@"select 
+                                                        c2.Title,v.Title,v.VideoID 
+                                                        from Channels c 
+                                                        inner join Subscriptions s on s.SubscriberChannelID=c.ChannelID 
+                                                        inner join Channels c2 on s.BeingSubscribedTochannelID=c2.ChannelID 
+                                                        inner join Videos v on v.ChannelID=c2.ChannelID 
+                                                        where c.ChannelID={0}
+                                                        and c2.ChannelID={1}
+                                                        and v.VideoID not in 
+                                                        (select VideoId from WatchedVideos where ChannelID={0})
+                                                        order by v.PublishedAt desc limit {2};", channelId, subscriptionId, numVideos);
+                NpgsqlCommand command = new NpgsqlCommand(selectSql, conn);
+                NpgsqlDataReader reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    int videoId = Convert.ToInt32(reader["ItemChannelID"].ToString());
+                    collectionVideoIds.Add(videoId);
+                }
+
+                conn.Close();
+            }
+
+            return collectionVideoIds;
         }
 
         #endregion

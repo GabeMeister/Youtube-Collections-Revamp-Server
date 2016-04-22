@@ -251,6 +251,41 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
 
         }
 
+        public static void GetVideosForCollection(YoutubeCollectionsHub hub, string userYoutubeId, string collectionTitle)
+        {
+            // Convert youtube id to channel id
+            int channelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
+            Debug.Assert(channelId > 0, "Non existant channel id.");
+
+            // Query database to get collection id
+            int collectionId = DBHandler.SelectCollectionIdByChannelIdAndTitle(channelId, collectionTitle);
+
+            // Query for all channels in collection
+            List<int> collectionItemIds = DBHandler.SelectCollectionItemsByCollectionId(collectionId);
+
+            // Calculate how many videos we should grab from each channel
+            // We add 1 just in case there are more than 20 channels in a collection
+            int numVidsPerChannel = (20 / collectionItemIds.Count) + 1;
+
+            // Query each channel to get the most recent unwatched videos
+            List<int> collectionVideoIds = new List<int>();
+            foreach (int collectionItemId in collectionItemIds)
+            {
+                List<int> videosForCollectionItem = DBHandler.SelectUnwatchedVideoIdsForUserSubscription(channelId, collectionItemId, numVidsPerChannel);
+                collectionVideoIds.AddRange(videosForCollectionItem);
+            }
+
+            // Grab video data for each video
+            List<VideoHolder> collectionVideos = DBHandler.SelectVideoInformationForVideoIds(collectionVideoIds);
+
+            // Sort the collection by date
+            List<VideoHolder> sortedCollectionVideos = collectionVideos.OrderBy(x => x.PublishedAt).ToList();
+
+            // Send to client
+            var hubMessage = new CollectionVideosMessage(sortedCollectionVideos);
+            hub.SendCollectionVideos(hubMessage);
+
+        }
 
 
         #endregion
