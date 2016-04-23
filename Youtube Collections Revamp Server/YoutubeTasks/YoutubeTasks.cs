@@ -279,7 +279,7 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
             List<VideoHolder> collectionVideos = DBHandler.SelectVideoInformationForVideoIds(collectionVideoIds);
 
             // Sort the collection by date
-            List<VideoHolder> sortedCollectionVideos = collectionVideos.OrderBy(x => x.PublishedAt).ToList();
+            List<VideoHolder> sortedCollectionVideos = collectionVideos.OrderByDescending(x => x.PublishedAt).ToList();
 
             // Send to client
             var hubMessage = new CollectionVideosMessage(sortedCollectionVideos);

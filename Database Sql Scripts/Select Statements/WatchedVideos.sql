@@ -12,17 +12,17 @@
 
 
 
--- select c2.ChannelID, c2.Title, v.YoutubeID, v.Title, c.Title, wv.DateViewed
--- from WatchedVideos wv
--- inner join Videos v on v.VideoID=wv.VideoID
--- inner join Channels c2 on c2.ChannelID=wv.ChannelID
--- inner join Channels c on c.ChannelID=v.ChannelID
--- where v.YoutubeID in ('i-gyZ35074k', '3vC5TsSyNjU', '3vC5TsSyNUU')
--- and c2.ChannelID=57810;
+select c2.ChannelID, c2.Title, v.YoutubeID, v.Title, c.Title, wv.DateViewed
+from WatchedVideos wv
+inner join Videos v on v.VideoID=wv.VideoID
+inner join Channels c2 on c2.ChannelID=wv.ChannelID
+inner join Channels c on c.ChannelID=v.ChannelID
+where v.YoutubeID = 'IVJBLawpm4E'
+and c2.ChannelID=57810;
 
 
 
 -- select * from channels where title='DopeRelease';
 
-select count(*) from WatchedVideos;
+-- select count(*) from WatchedVideos;
 

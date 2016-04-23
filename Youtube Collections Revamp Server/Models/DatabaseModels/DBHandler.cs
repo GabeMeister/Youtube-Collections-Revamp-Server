@@ -411,7 +411,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             {
                 conn.Open();
 
-                string selectSql = string.Format("select CollectionID from Collections where OwnerChannelID='{0}' and Title='{0}';", channelId, collectionTitle);
+                string selectSql = string.Format("select CollectionID from Collections where OwnerChannelID={0} and Title='{1}';", channelId, title);
                 NpgsqlCommand command = new NpgsqlCommand(selectSql, conn);
                 NpgsqlDataReader reader = command.ExecuteReader();
                 Debug.Assert(reader.HasRows, "Collection not found");
@@ -703,8 +703,9 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             {
                 conn.Open();
 
-                string selectSql = string.Format(@"select v.YoutubeID, v.ChannelID, v.Title, v.Thumbnail, v.Duration, v.ViewCount, v.PublishedAt
+                string selectSql = string.Format(@"select v.YoutubeID, v.ChannelID, v.Title, v.Thumbnail, v.Duration, v.ViewCount, v.PublishedAt, c.Title as ChannelTitle
                                                     from Videos v 
+                                                    inner join Channels c on v.ChannelID=c.ChannelID
                                                     where v.VideoID in ({0});", string.Join(",", videoIds));
                 NpgsqlCommand command = new NpgsqlCommand(selectSql, conn);
                 NpgsqlDataReader reader = command.ExecuteReader();
@@ -856,7 +857,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                 conn.Open();
 
                 string selectSql = string.Format(@"select 
-                                                        c2.Title,v.Title,v.VideoID 
+                                                        v.VideoID 
                                                         from Channels c 
                                                         inner join Subscriptions s on s.SubscriberChannelID=c.ChannelID 
                                                         inner join Channels c2 on s.BeingSubscribedTochannelID=c2.ChannelID 
@@ -871,7 +872,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
                 while (reader.Read())
                 {
-                    int videoId = Convert.ToInt32(reader["ItemChannelID"].ToString());
+                    int videoId = Convert.ToInt32(reader["VideoID"].ToString());
                     collectionVideoIds.Add(videoId);
                 }
 

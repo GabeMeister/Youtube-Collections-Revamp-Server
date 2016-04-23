@@ -14,12 +14,14 @@ namespace YoutubeCollectionsRevampServer.Models.ObjectHolderModels
         public ulong? VideoHolderId { get; set; }
         public string YoutubeId { get; set; }
         public ulong? ChannelId { get; set; }
+        public string ChannelTitle { get; set; }
         public string YoutubeChannelId { get; set; }
         public string Title { get; set; }
         public string Thumbnail { get; set; }
         public string Duration { get; set; }
         public ulong? ViewCount { get; set; }
         public DateTime? PublishedAt { get; set; }
+        
 
 
         public VideoHolder()
@@ -27,6 +29,7 @@ namespace YoutubeCollectionsRevampServer.Models.ObjectHolderModels
             VideoHolderId = 0;
             YoutubeId = string.Empty;
             ChannelId = 0;
+            ChannelTitle = string.Empty;
             Title = string.Empty;
             Thumbnail = string.Empty;
             Duration = string.Empty;
@@ -41,6 +44,7 @@ namespace YoutubeCollectionsRevampServer.Models.ObjectHolderModels
             YoutubeId = videoResponse.Id.ToString().Trim();
             // Can't assign the actual channel id because we are populating from an API response
             ChannelId = 0;
+            ChannelTitle = videoResponse.Snippet.ChannelTitle.ToString().Trim();
             YoutubeChannelId = videoResponse.Snippet.ChannelId.ToString().Trim();
             Title = videoResponse.Snippet.Title.ToString().Trim();
             Thumbnail = videoResponse.Snippet.Thumbnails.Medium.Url.ToString().Trim();
@@ -93,12 +97,10 @@ namespace YoutubeCollectionsRevampServer.Models.ObjectHolderModels
                 PublishedAt = DateTime.Parse(reader["PublishedAt"].ToString().Trim());
             }
             
-            
-            
-            
-            
-            
-            
+            if (ColumnExists(reader, "ChannelTitle"))
+            {
+                ChannelTitle = reader["ChannelTitle"].ToString().Trim();
+            }
             
             
         }
