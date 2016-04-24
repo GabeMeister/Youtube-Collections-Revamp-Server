@@ -17,7 +17,7 @@ from WatchedVideos wv
 inner join Videos v on v.VideoID=wv.VideoID
 inner join Channels c2 on c2.ChannelID=wv.ChannelID
 inner join Channels c on c.ChannelID=v.ChannelID
-where v.YoutubeID = 'IVJBLawpm4E'
+where v.YoutubeID = 'WXePdL_XlpE'
 and c2.ChannelID=57810;
 
 

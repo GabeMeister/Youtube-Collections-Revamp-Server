@@ -313,10 +313,20 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             return rowsAffected;
         }
 
-        public static void RenameCollection(string ownerYoutubeChannelId, string origCollectionTitle, string newCollectionTitle)
+        public static void RenameCollection(int collectionId, string newCollectionTitle)
         {
-            // TODO
-            throw new NotImplementedException();
+            // Rename the collection
+            using (NpgsqlConnection conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                string updateSql = string.Format("update Collections set title='{0}' where CollectionID={1};", newCollectionTitle, collectionId);
+                NpgsqlCommand updateCommand = new NpgsqlCommand(updateSql, conn);
+                int rowsAffected = updateCommand.ExecuteNonQuery();
+                Debug.Assert(rowsAffected > 0, "Collection update didn't complete correctly.");
+
+                conn.Close();
+            }
         }
 
         public static void DeleteCollection(int collectionId)

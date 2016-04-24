@@ -41,6 +41,11 @@ namespace YoutubeCollectionsRevampServer
             YoutubeTasks.InsertCollection(collectionName, youtubeId);
         }
 
+        public void RenameCollection(string oldCollectionTitle, string newCollectionTitle, string userYoutubeId)
+        {
+            YoutubeTasks.RenameCollection(oldCollectionTitle, newCollectionTitle, userYoutubeId);
+        }
+
         public void InsertCollectionItem(string collectionItemYoutubeId, string collectionTitle, string userYoutubeId)
         {
             YoutubeTasks.InsertCollectionItem(collectionItemYoutubeId, collectionTitle, userYoutubeId);

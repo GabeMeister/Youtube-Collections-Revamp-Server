@@ -106,6 +106,19 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
 
         }
 
+        public static void RenameCollection(string oldCollectionTitle, string newCollectionTitle, string userYoutubeId)
+        {
+            int channelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
+            Debug.Assert(channelId > 0, "Non existant channel id.");
+
+            // Get the collection id
+            int collectionId = DBHandler.SelectCollectionIdByChannelIdAndTitle(channelId, oldCollectionTitle);
+            Debug.Assert(collectionId > -1, "Collection not found");
+
+            DBHandler.RenameCollection(collectionId, newCollectionTitle);
+
+        }
+
         public static void InsertCollectionItem(string collectionItemYoutubeId, string collectionTitle, string userYoutubeId)
         {
             // Get the user Id
@@ -143,7 +156,6 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
             // Delete collection item
             DBHandler.DeleteCollectionItem(collectionId, collectionItemChannelId);
         }
-
 
         public static void CompletelyDeleteChannel(string youtubeChannelId)
         {
