@@ -58,7 +58,12 @@ namespace YoutubeCollectionsRevampServer
 
         public void InsertWatchedVideo(string youtubeVideoId, string userYoutubeId, string dateViewed)
         {
-            YoutubeTasks.InsertWatchedVideo(youtubeVideoId, userYoutubeId, dateViewed);
+            YoutubeTasks.InsertWatchedVideo(this, youtubeVideoId, userYoutubeId, dateViewed);
+        }
+
+        public void MarkVideoAsWatched(string youtubeVideoId, string userYoutubeId, string dateViewed)
+        {
+            YoutubeTasks.MarkVideoAsWatched(youtubeVideoId, userYoutubeId, dateViewed);
         }
 
         public void RestartInitialization()
@@ -112,6 +117,11 @@ namespace YoutubeCollectionsRevampServer
         public void SendCollectionVideos(SignalRMessage message)
         {
             this.Clients.Caller.onRelatedVideosChange(message);
+        }
+
+        public void NotifyCallerWatchedVideoInserted(SignalRMessage message)
+        {
+            this.Clients.Caller.onWatchedVideoInserted(message);
         }
 
         #endregion

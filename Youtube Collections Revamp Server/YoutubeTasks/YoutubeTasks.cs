@@ -194,7 +194,26 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
 
         }
 
-        public static void InsertWatchedVideo(string youtubeVideoId, string userYoutubeId, string dateViewed)
+        public static void InsertWatchedVideo(YoutubeCollectionsHub hub, string youtubeVideoId, string userYoutubeId, string dateViewed)
+        {
+            int channelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
+            
+            if (!DBHandler.DoesItemExist("Videos", "YoutubeID", youtubeVideoId))
+            {
+                // Might not have video, we need to fetch it's information
+                // and insert it's meta-data into the database
+                FetchVideoInfo(youtubeVideoId);
+            }
+
+            int videoId = DBHandler.RetrieveIdFromYoutubeId("VideoID", "Videos", youtubeVideoId);
+
+            DBHandler.InsertWatchedVideo(videoId, channelId, dateViewed);
+
+            var message = new WatchedVideoInsertedMessage();
+            hub.NotifyCallerWatchedVideoInserted(message);
+        }
+
+        public static void MarkVideoAsWatched(string youtubeVideoId, string userYoutubeId, string dateViewed)
         {
             int channelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
             
@@ -209,6 +228,8 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
 
             DBHandler.InsertWatchedVideo(videoId, channelId, dateViewed);
         }
+
+
 
         public static void FetchVideoInfo(string videoIds)
         {
