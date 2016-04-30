@@ -10,14 +10,16 @@ namespace YoutubeCollectionsRevampServer.Models.SignalRMessaging
     {
         public string SubscriptionYoutubeChannelId;
         public string SubscriptionChannelTitle;
+        public string SubscriptionChannelThumbnail;
 
-        public SubscriptionInsertMessage(int subscriptionIndex, int? totalSubscriptions, string beingSubscribedToYoutubeChannelId, string subscriptionTitle)
+        public SubscriptionInsertMessage(int subscriptionIndex, int? totalSubscriptions, string beingSubscribedToYoutubeChannelId, string subscriptionTitle, string subscriptionThumbnail)
         {
             Debug.Assert(totalSubscriptions != null, "Error: totalSubscriptions is null");
 
             Message = string.Format("Fetching {0}/{1}...", subscriptionIndex, totalSubscriptions);
             SubscriptionYoutubeChannelId = beingSubscribedToYoutubeChannelId;
             SubscriptionChannelTitle = subscriptionTitle;
+            SubscriptionChannelThumbnail = subscriptionThumbnail;
         }
     }
 }

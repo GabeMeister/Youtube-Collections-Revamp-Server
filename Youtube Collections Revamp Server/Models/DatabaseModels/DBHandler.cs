@@ -708,6 +708,8 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         public static List<VideoHolder> SelectVideoInformationForVideoIds(IEnumerable<int> videoIds)
         {
+            Debug.Assert(videoIds.Count() > 0, "No video ids to query for");
+
             List<VideoHolder> collectionVideos = new List<VideoHolder>();
             using (NpgsqlConnection conn = new NpgsqlConnection(DBHandler.DatabaseConnStr))
             {

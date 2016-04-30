@@ -71,6 +71,7 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
                     {
                         string title = searchResult.Snippet.Title;
                         string beingSubscribedToYoutubeId = searchResult.Snippet.ResourceId.ChannelId;
+                        string subscriptionThumbnail = searchResult.Snippet.Thumbnails.Medium.Url.ToString().Trim();
 
                         // Get actual channel id for the subscriber youtube channel
                         int beingSubscribedToChannelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", beingSubscribedToYoutubeId);
@@ -82,7 +83,7 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
                         }
 
 
-                        var message = new SubscriptionInsertMessage(++subscriptionIndex, subscriptionCount, beingSubscribedToYoutubeId, title);
+                        var message = new SubscriptionInsertMessage(++subscriptionIndex, subscriptionCount, beingSubscribedToYoutubeId, title, subscriptionThumbnail);
                         hub.NotifyCaller(message);
                         DBHandler.InsertSubscription(subscriberChannelId, beingSubscribedToChannelId);
                         
