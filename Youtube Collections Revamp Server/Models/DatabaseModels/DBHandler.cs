@@ -65,6 +65,35 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             return value;
         }
 
+        public static string RetrieveColumnBySingleCondition(string columnToSelect, string table, string columnToQuery, int queryValue)
+        {
+            string value = null;
+
+            using (NpgsqlConnection conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                string selectSql = string.Format(@"select {0} from {1} where {2}={3};", 
+                    Sanitize(columnToSelect),
+                    Sanitize(table), 
+                    Sanitize(columnToQuery), 
+                    Sanitize(queryValue));
+                SqlBuilder.SelectByIdSql(columnToSelect, table, columnToQuery, queryValue);
+                NpgsqlCommand selectCommand = new NpgsqlCommand(selectSql, conn);
+                NpgsqlDataReader reader = selectCommand.ExecuteReader();
+
+                if (reader.HasRows)
+                {
+                    reader.Read();
+                    value = reader[columnToSelect].ToString().Trim();
+                }
+
+                conn.Close();
+            }
+
+            return value;
+        }
+
         public static List<string> RetrieveColumnFromTable(string columnToSelect, string table)
         {
             List<string> youtubeIds = new List<string>();

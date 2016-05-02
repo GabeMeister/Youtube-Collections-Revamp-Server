@@ -36,6 +36,12 @@ namespace YoutubeCollectionsRevampServer
             this.Clients.Caller.onSubscriptionsInserted();
         }
 
+        public void FetchAndInsertNewChannelSubscriptions(string userYoutubeId)
+        {
+            YoutubeTasks.FetchAndInsertNewChannelSubscriptions(this, userYoutubeId);
+            this.Clients.Caller.onNewSubscriptionsInserted();
+        }
+
         public void InsertCollection(string collectionName, string youtubeId)
         {
             YoutubeTasks.InsertCollection(collectionName, youtubeId);

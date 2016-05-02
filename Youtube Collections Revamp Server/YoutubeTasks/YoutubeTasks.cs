@@ -93,8 +93,11 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
             }
             while (nextPageToken != null);
 
+        }
 
-
+        public static void FetchAndInsertNewChannelSubscriptions(YoutubeCollectionsHub hub, string subscriberYoutubeId)
+        {
+            // TODO
         }
 
         public static void InsertCollection(string collectionName, string youtubeId)
