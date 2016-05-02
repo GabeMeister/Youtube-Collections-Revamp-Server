@@ -206,6 +206,26 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             }
         }
 
+        public static void SetAreVideosLoadedForChannel(int channelId, bool areVideosLoaded)
+        {
+            bool exists = DoesItemExist("Channels", "ChannelID", channelId);
+            Debug.Assert(exists, "Non-existant channel id");
+
+            using (NpgsqlConnection conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                // Now we actually insert the channel because we know it's not in the database
+                string updateSql = string.Format("update Channels set AreVideosLoaded={0} where ChannelID={1}", areVideosLoaded, channelId);
+                var updateCommand = new NpgsqlCommand(updateSql, conn);
+                int rowsAffected = updateCommand.ExecuteNonQuery();
+
+                Debug.Assert(rowsAffected > 0, "Channel update didn't complete correctly.");
+                
+                conn.Close();
+            }
+        }
+
         #endregion
 
         // ============================ SUBSCRIPTIONS
@@ -961,7 +981,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
                 string selectSql = SqlBuilder.SelectByIdSql("count(*)", table, columnToQuery, id);
                 NpgsqlCommand selectCommand = new NpgsqlCommand(selectSql, conn);
-                int count = Convert.ToInt16(selectCommand.ExecuteScalar());
+                int count = Convert.ToInt32(selectCommand.ExecuteScalar());
 
                 if (count > 0)
                 {

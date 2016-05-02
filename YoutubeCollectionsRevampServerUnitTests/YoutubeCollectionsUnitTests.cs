@@ -2,11 +2,14 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using YoutubeCollectionsRevampServer;
 using YoutubeCollectionsRevampServer.Models.DatabaseModels;
+using System.Collections.Generic;
+using System.Linq;
+using YoutubeCollectionsRevampServer.Models.ApiModels;
 
 namespace YoutubeCollectionsRevampServerUnitTests
 {
     [TestClass]
-    public class DBUnitTests
+    public class YoutubeCollectionsUnitTests
     {
         [TestMethod]
         public void TestRestartCollections()
@@ -54,7 +57,16 @@ namespace YoutubeCollectionsRevampServerUnitTests
         [TestMethod]
         public void MarkVideosDownloadedOrNot()
         {
-            
+            List<int> allChannelIds = DBHandler.RetrieveColumnFromTable("ChannelID", "Channels").Select(x => int.Parse(x)).ToList();
+            var logger = new YoutubeCollectionsLogger();
+
+            foreach(int channelId in allChannelIds)
+            {
+                bool areVideosPresent = DBHandler.DoesItemExist("Videos", "ChannelID", channelId);
+                string channelName = DBHandler.RetrieveColumnBySingleCondition("Title", "Channels", "ChannelID", channelId);
+                DBHandler.SetAreVideosLoadedForChannel(channelId, areVideosPresent);
+                logger.Log(string.Format("{0}: {1}", channelName, areVideosPresent ? "yes" : "no"));
+            }
         }
 
 
