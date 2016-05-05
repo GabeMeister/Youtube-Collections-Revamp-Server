@@ -5,12 +5,14 @@ using YoutubeCollectionsRevampServer.Models.DatabaseModels;
 using System.Collections.Generic;
 using System.Linq;
 using YoutubeCollectionsRevampServer.Models.ApiModels;
+using YoutubeCollectionsRevampServer.Controllers.YoutubeTasks;
 
 namespace YoutubeCollectionsRevampServerUnitTests
 {
     [TestClass]
     public class YoutubeCollectionsUnitTests
     {
+        #region ACTUAL TESTS
         [TestMethod]
         public void TestRestartCollections()
         {
@@ -54,6 +56,11 @@ namespace YoutubeCollectionsRevampServerUnitTests
 
         }
 
+
+        #endregion
+
+
+        #region BACKGROUND SCRIPTS
         [TestMethod]
         public void MarkVideosDownloadedOrNot()
         {
@@ -69,6 +76,13 @@ namespace YoutubeCollectionsRevampServerUnitTests
             }
         }
 
+        [TestMethod]
+        public void UpdateAllChannels()
+        {
+            YoutubeTasks.UpdateAllMissingChannelUploads();
+        }
+
+        #endregion
 
     }
 }

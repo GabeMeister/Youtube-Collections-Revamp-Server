@@ -705,6 +705,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                     video.ChannelId = Convert.ToUInt64(RetrieveIdFromYoutubeId("ChannelID", "Channels", video.YoutubeChannelId));
                     Debug.Assert(video.ChannelId > 0, "Inserting video of non-existant channel. Channel must have been already inserted before this point.");
 
+                    Debug.WriteLine(video.Title);
                     string insertSQL = SqlBuilder.InsertVideoSql(video);
                     NpgsqlCommand insertCommand = new NpgsqlCommand(insertSQL, conn);
                     rowsAffected = insertCommand.ExecuteNonQuery();

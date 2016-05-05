@@ -128,15 +128,10 @@ D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collectio
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Microsoft.Owin.dll
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Microsoft.Owin.Host.SystemWeb.dll
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Microsoft.Owin.Security.dll
-D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Microsoft.Threading.Tasks.dll
-D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Microsoft.Threading.Tasks.Extensions.Desktop.dll
-D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Microsoft.Threading.Tasks.Extensions.dll
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Microsoft.Web.Infrastructure.dll
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Newtonsoft.Json.dll
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Npgsql.dll
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Owin.dll
-D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\System.Net.Http.Extensions.dll
-D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\System.Net.Http.Primitives.dll
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Zlib.Portable.dll
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\BouncyCastle.Crypto.pdb
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Google.Apis.pdb
@@ -157,15 +152,9 @@ D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collectio
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Microsoft.Owin.xml
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Microsoft.Owin.Host.SystemWeb.xml
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Microsoft.Owin.Security.xml
-D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Microsoft.Threading.Tasks.xml
-D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Microsoft.Threading.Tasks.Extensions.xml
-D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Microsoft.Threading.Tasks.Extensions.Desktop.xml
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Newtonsoft.Json.xml
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Npgsql.xml
-D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\System.Net.Http.Extensions.xml
-D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\System.Net.Http.Primitives.xml
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\bin\Zlib.Portable.xml
-D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\obj\Debug\Youtube Collections Revamp Server.csproj.App.config
+D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\obj\Debug\Youtube Collections Revamp Server.csprojResolveAssemblyReference.cache
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\obj\Debug\Youtube Collections Revamp Server.dll
 D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\obj\Debug\Youtube Collections Revamp Server.pdb
-D:\Documents\Coding_Projects\Youtube Collections Revamp Server\Youtube Collections Revamp Server\obj\Debug\Youtube Collections Revamp Server.csprojResolveAssemblyReference.cache

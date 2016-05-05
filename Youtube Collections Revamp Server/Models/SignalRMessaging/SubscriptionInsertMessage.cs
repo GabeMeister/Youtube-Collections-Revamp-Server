@@ -11,8 +11,14 @@ namespace YoutubeCollectionsRevampServer.Models.SignalRMessaging
         public string SubscriptionYoutubeChannelId;
         public string SubscriptionChannelTitle;
         public string SubscriptionChannelThumbnail;
+        public bool AreVideosLoaded;
 
-        public SubscriptionInsertMessage(int subscriptionIndex, int? totalSubscriptions, string beingSubscribedToYoutubeChannelId, string subscriptionTitle, string subscriptionThumbnail)
+        public SubscriptionInsertMessage(int subscriptionIndex, 
+            int? totalSubscriptions, 
+            string beingSubscribedToYoutubeChannelId, 
+            string subscriptionTitle, 
+            string subscriptionThumbnail,
+            bool areVideosLoaded)
         {
             Debug.Assert(totalSubscriptions != null, "Error: totalSubscriptions is null");
 
@@ -20,6 +26,7 @@ namespace YoutubeCollectionsRevampServer.Models.SignalRMessaging
             SubscriptionYoutubeChannelId = beingSubscribedToYoutubeChannelId;
             SubscriptionChannelTitle = subscriptionTitle;
             SubscriptionChannelThumbnail = subscriptionThumbnail;
+            AreVideosLoaded = areVideosLoaded;
         }
     }
 }
