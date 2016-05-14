@@ -45,5 +45,9 @@ create table CollectionItems (
 	ItemChannelID INT NOT NULL REFERENCES Channels(ChannelID) ON DELETE CASCADE
 );
 
+create table ChannelsToDownload (
+	ChannelsToDownloadID SERIAL PRIMARY KEY,
+	ChannelID INT NOT NULL REFERENCES Channels(ChannelID) ON DELETE CASCADE
+);
 
 

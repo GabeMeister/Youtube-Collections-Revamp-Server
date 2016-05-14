@@ -85,6 +85,12 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
                         // We can tell if any videos are loaded by seeing if any videos contain the associated channel id
                         bool areVideosLoaded = DBHandler.DoesItemExist("Videos", "ChannelID", beingSubscribedToChannelId);
 
+                        if (!areVideosLoaded)
+                        {
+                            // If there's no videos for this channel, then we need to flag this channel id to download later
+                            DBHandler.InsertChannelIntoChannelsToDownload(beingSubscribedToChannelId);
+                        }
+
                         var message = new SubscriptionInsertMessage(++subscriptionIndex, subscriptionCount, beingSubscribedToYoutubeId, title, subscriptionThumbnail, areVideosLoaded);
                         hub.NotifyCaller(message);
                         DBHandler.InsertSubscription(subscriberChannelId, beingSubscribedToChannelId);

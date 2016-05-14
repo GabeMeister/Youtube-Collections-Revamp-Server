@@ -166,6 +166,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             // We check if the same youtube channel id has already been inserted
             if (!DoesItemExist("Channels", "YoutubeID", channel.YoutubeId))
             {
+                // We first insert the channel into the Channels table
                 using (NpgsqlConnection conn = new NpgsqlConnection(DatabaseConnStr))
                 {
                     conn.Open();
@@ -182,9 +183,36 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
                     conn.Close();
                 }
+
+                // Get the channel id of the channel we just inserted
+                int channelId = RetrieveIdFromYoutubeId("ChannelID", "Channels", channel.YoutubeId);
+
+                InsertChannelIntoChannelsToDownload(channelId);
+                
             }
 
             return rowsAffected;
+        }
+
+        public static void InsertChannelIntoChannelsToDownload(int channelId)
+        {
+            if (!DoesItemExist("ChannelsToDownload", "ChannelID", channelId))
+            {
+                // We then log this channel to the ChannelsToDownload table, as it will have to be queued to download later.
+                using (var conn = new NpgsqlConnection(DatabaseConnStr))
+                {
+                    conn.Open();
+
+                    string insertSQL = string.Format("insert into ChannelsToDownload (ChannelID) values ({0});", Sanitize(channelId));
+
+                    var insertCommand = new NpgsqlCommand(insertSQL, conn);
+                    int channelsToDownloadRowsAffected = insertCommand.ExecuteNonQuery();
+
+                    Debug.Assert(channelsToDownloadRowsAffected > 0, "Channel didn't insert into ChannelsToDownload correctly.");
+
+                    conn.Close();
+                }
+            }
         }
 
         public static void DeleteChannel(int channelId)
