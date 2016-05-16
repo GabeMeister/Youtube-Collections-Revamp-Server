@@ -256,6 +256,67 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         #endregion
 
+        // ============================ CHANNELS TO DOWNLOAD
+        #region CHANNELS TO DOWNLOAD
+        public static void RemoveChannelToDownload(int channelId)
+        {
+            Debug.Assert(DoesItemExist("ChannelsToDownload", "ChannelID", channelId), "Deleting non-existant channel to download");
+
+            // Delete the collection
+            using (NpgsqlConnection conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                string deleteSql = string.Format("delete from ChannelsToDownload where ChannelID={0};", Sanitize(channelId));
+                NpgsqlCommand deleteCommand = new NpgsqlCommand(deleteSql, conn);
+
+                // The user may have no videos, so returning no rows affected is ok
+                deleteCommand.ExecuteNonQuery();
+
+                conn.Close();
+            }
+        }
+
+        public static List<string> GetChannelsToDownloadYoutubeIdsMatchingList(List<string> youtubeIds)
+        {
+            List<string> channelsToDownloadIds = new List<string>();
+
+            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                // TODO: figure out why this isn't working
+                // youtubeIds.ForEach(x => Quotify(x));
+                for (int i = 0; i < youtubeIds.Count; i++)
+                {
+                    youtubeIds[i] = Quotify(Sanitize(youtubeIds[i]));
+                }
+
+                string sql = string.Format(@"select c.YoutubeID 
+                                            from ChannelsToDownload ctd
+                                            inner join Channels c 
+                                            on c.ChannelID=ctd.ChannelID
+                                            where c.YoutubeID in ({0});", 
+                                            string.Join(",", youtubeIds));
+                var selectCommand = new NpgsqlCommand(sql, conn);
+
+                // The user may have no videos, so returning no rows affected is ok
+                NpgsqlDataReader reader = selectCommand.ExecuteReader();
+
+                while(reader.Read())
+                {
+                    string youtubeId = reader["YoutubeID"].ToString().Trim();
+                    channelsToDownloadIds.Add(youtubeId);
+                }
+
+
+                conn.Close();
+            }
+
+            return channelsToDownloadIds;
+        }
+        #endregion
+
         // ============================ SUBSCRIPTIONS
         #region SUBSCRIPTIONS
         public static int InsertSubscription(int subscriberChannelId, int beingSubscribedToChannelId)
@@ -1026,6 +1087,11 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
         private static string Sanitize(object str)
         {
             return str.ToString().Replace("'", "''").Trim();
+        }
+
+        private static string Quotify(string str)
+        {
+            return "'" + str + "'";
         }
 
 

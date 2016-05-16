@@ -9,17 +9,15 @@ using YoutubeCollectionsRevampServer.Controllers.YoutubeTasks;
 using YoutubeCollectionsRevampServer.Models;
 using YoutubeCollectionsRevampServer.Models.SignalRMessaging;
 using System.Web.Caching;
+using System.Diagnostics;
 
 namespace YoutubeCollectionsRevampServer
 {
     [HubName("YoutubeCollectionsServer")]
     public class YoutubeCollectionsHub : Hub
     {
-        private static CacheItemRemovedCallback _onCacheRemove = null;
-
         public YoutubeCollectionsHub()
         {
-            _onCacheRemove = new CacheItemRemovedCallback(CacheItemRemoved);
         }
 
 
@@ -96,12 +94,24 @@ namespace YoutubeCollectionsRevampServer
 
         public void ModifyHttpCache()
         {
-            HttpRuntime.Cache.Insert("TestItem", 1, null, DateTime.Now.AddSeconds(1), Cache.NoSlidingExpiration, CacheItemPriority.NotRemovable, _onCacheRemove);
+            HttpRuntime.Cache.Insert("NewChannelsToDownloadTimeLeft", 
+                1, 
+                null, 
+                DateTime.Now.AddSeconds(1), 
+                Cache.NoSlidingExpiration, 
+                CacheItemPriority.NotRemovable, 
+                new CacheItemRemovedCallback(YoutubeTasks.DownloadMissingChannels));
+
+            var current = HttpContext.Current;
+            string value = current.Cache.Get("NewChannelsToDownloadTimeLeft").ToString();
+            Debug.WriteLine(value);
         }
 
-        public void CacheItemRemoved(string k, object v, CacheItemRemovedReason r)
+        public void GetChannelsNotDownloaded(List<string> youtubeIds)
         {
-            this.Clients.Caller.onCacheRemoved("Removed!");
+            List<string> channelsToDownloadYoutubeIds = YoutubeTasks.GetChannelsNotDownloaded(youtubeIds);
+            var message = new ChannelsToDownloadMessage(channelsToDownloadYoutubeIds);
+            this.Clients.Caller.onChannelsToDownloadFetched(message);
         }
 
 

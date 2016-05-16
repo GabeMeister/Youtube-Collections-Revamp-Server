@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -19,6 +19,8 @@ using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
 using System.Diagnostics;
 using Microsoft.AspNet.SignalR;
+using System.Web.Caching;
+using System.Web;
 
 
 
@@ -330,6 +332,41 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
 
         }
 
+        public static void DownloadMissingChannels(string k, object v, CacheItemRemovedReason r)
+        {
+            // get the missing channels
+            List<int> channelIds = DBHandler.RetrieveColumnFromTable("ChannelID", "ChannelsToDownload").Select(x => int.Parse(x)).ToList();
+            
+
+            // iterate through them to fetch the video information
+            foreach(int channelId in channelIds)
+            {
+                string youtubeId = DBHandler.RetrieveColumnBySingleCondition("YoutubeID", "Channels", "ChannelID", channelId);
+                FetchChannelUploads(youtubeId);
+
+                // We need to remove this channel id from the ChannelsToDownload table now.
+                DBHandler.RemoveChannelToDownload(channelId);
+            }
+            
+
+            // Set the cache to run again in 5 minutes
+            // TODO: change from 1 second to 5 minutes
+            HttpRuntime.Cache.Insert("NewChannelsToDownloadTimeLeft", 
+                1, 
+                null, 
+                DateTime.Now.AddSeconds(1), 
+                Cache.NoSlidingExpiration, 
+                CacheItemPriority.NotRemovable, 
+                new CacheItemRemovedCallback(YoutubeTasks.DownloadMissingChannels));
+        }
+
+        public static List<string> GetChannelsNotDownloaded(List<string> youtubeIds)
+        {
+            // If a channel still exists in the ChannelsToDownload table, then 
+            // its videos still haven't been downloaded
+            return DBHandler.GetChannelsToDownloadYoutubeIdsMatchingList(youtubeIds);
+            
+        }
 
         #endregion
 
@@ -398,20 +435,21 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
                                 // Remove last comma
                                 videoIds = videoIds.Substring(0, videoIds.Length - 1);
 
-                                Trace.WriteLine("YUP");
                                 FetchVideoInfo(videoIds);
                             }
 
                         }
 
+                        Debug.WriteLine("█");
+
                         wasSuccessfulFetch = true;
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                         // Log the error and attempt the api query again
                         using (StreamWriter writer = File.AppendText(YOUTUBE_LOG_FILE))
                         {
-                            writer.WriteLine("Error on " + channel.Title + " with " + nextPageToken + " as page token");
+                            writer.WriteLine(DateTime.Now + "Error on " + channel.Title + " with " + nextPageToken + " as page token");
                         }
                     }
 
