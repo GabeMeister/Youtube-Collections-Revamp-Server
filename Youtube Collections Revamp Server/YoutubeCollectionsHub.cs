@@ -18,6 +18,7 @@ namespace YoutubeCollectionsRevampServer
     {
         public YoutubeCollectionsHub()
         {
+            // TODO: Add in cache-expired event handler to update channels
         }
 
 
@@ -32,12 +33,6 @@ namespace YoutubeCollectionsRevampServer
         {
             YoutubeTasks.FetchAndInsertChannelSubscriptions(this, youtubeId);
             this.Clients.Caller.onSubscriptionsInserted();
-        }
-
-        public void FetchAndInsertNewChannelSubscriptions(string userYoutubeId)
-        {
-            YoutubeTasks.FetchAndInsertNewChannelSubscriptions(this, userYoutubeId);
-            this.Clients.Caller.onNewSubscriptionsInserted();
         }
 
         public void InsertCollection(string collectionName, string youtubeId)
@@ -114,6 +109,11 @@ namespace YoutubeCollectionsRevampServer
             this.Clients.Caller.onChannelsToDownloadFetched(message);
         }
 
+        public void UpdateSubscriptions(string userYoutubeId)
+        {
+            YoutubeTasks.UpdateSubscriptions(this, userYoutubeId);
+        }
+
 
         #endregion
 
@@ -138,6 +138,11 @@ namespace YoutubeCollectionsRevampServer
         public void NotifyCallerWatchedVideoInserted(SignalRMessage message)
         {
             this.Clients.Caller.onWatchedVideoInserted(message);
+        }
+
+        public void NotifyCallerOfSubscriptionUpdate(SignalRMessage message)
+        {
+            Clients.Caller.onSubscriptionUpdated(message);
         }
 
         #endregion

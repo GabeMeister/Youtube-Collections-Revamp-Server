@@ -150,6 +150,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             return items;
         }
 
+
         #endregion
 
         // ============================ JOINS
@@ -254,6 +255,30 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             }
         }
 
+        public static ChannelHolder PopulateChannelHolderFromTable(int channelId, string columnsToSelect)
+        {
+            ChannelHolder channel = null;
+
+            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                string sql = string.Format("select {0} from Channels where ChannelID=@ChannelID;", columnsToSelect);
+                var command = new NpgsqlCommand(sql, conn);
+                command.Parameters.AddWithValue("@ChannelID", channelId);
+
+                var reader = command.ExecuteReader();
+
+                if (reader.HasRows && reader.Read())
+                {
+                    channel = new ChannelHolder(reader);
+                }
+
+                conn.Close();
+            }
+
+            return channel;
+        }
         #endregion
 
         // ============================ CHANNELS TO DOWNLOAD
@@ -279,6 +304,12 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         public static List<string> GetChannelsToDownloadYoutubeIdsMatchingList(List<string> youtubeIds)
         {
+            if (youtubeIds.Count == 0)
+            {
+                // We don't return anything here, just an empty list
+                return new List<string>();
+            }
+
             List<string> channelsToDownloadIds = new List<string>();
 
             using (var conn = new NpgsqlConnection(DatabaseConnStr))
@@ -354,6 +385,36 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             return rowsAffected;
         }
 
+        public static bool DeleteSubscription(int subscriberChannelId, int beingSubscribedToChannelId)
+        {
+            Debug.Assert(DoesItemExist("Channels", "ChannelID", subscriberChannelId), "Deleting subscriptions of non-existant channel");
+            Debug.Assert(DoesItemExist("Channels", "ChannelID", beingSubscribedToChannelId), "Channel is being subscribed to a non-existant channel");
+
+            bool isSuccessful = false;
+
+            // Delete the subscription
+            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                var command = new NpgsqlCommand("delete from Subscriptions where SubscriberChannelID=@SubscriberChannelID and BeingSubscribedToChannelID=@BeingSubscribedToChannelID;", conn);
+                command.Parameters.AddWithValue("@SubscriberChannelID", subscriberChannelId);
+                command.Parameters.AddWithValue("@BeingSubscribedToChannelID", beingSubscribedToChannelId);
+
+                // The user may have no watched videos, so returning no rows affected is ok
+                int affectedRows = command.ExecuteNonQuery();
+
+                if (affectedRows > 0)
+                {
+                    isSuccessful = true;
+                }
+
+                conn.Close();
+            }
+
+            return isSuccessful;
+        }
+
         public static bool DoesSubscriptionExist(int subscriberChannelId, int beingSubscribedToChannelId)
         {
             bool doesExist = false;
@@ -413,6 +474,34 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
                 conn.Close();
             }
+        }
+
+        public static List<string> GetYoutubeIdSubscriptionsForUser(int channelId)
+        {
+            List<string> allSubscriptions = new List<string>();
+
+            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                var command = new NpgsqlCommand(@"select 
+                                                    c.YoutubeID
+                                                    from Subscriptions s
+                                                    inner join Channels c on c.ChannelID=s.BeingSubscribedToChannelID
+                                                    where s.SubscriberChannelID=@ChannelID;", conn);
+                command.Parameters.AddWithValue("@ChannelID", channelId);
+
+                var reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    allSubscriptions.Add(reader["YoutubeID"].ToString().Trim());
+                }
+
+                conn.Close();
+            }
+
+            return allSubscriptions;
         }
 
         #endregion
@@ -963,6 +1052,11 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         public static IEnumerable<string> GetUnwatchedVideosForUser(int channelId, IEnumerable<int> relatedVideoIds)
         {
+            if (!relatedVideoIds.Any())
+            {
+                return new List<string>();
+            }
+
             List<string> unwatchedYoutubeIds = new List<string>();
             List<int> watchedVideoIds = new List<int>();
 

@@ -28,8 +28,7 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
 {
     public class YoutubeTasks
     {
-        private const int MAX_RESULTS = 50;
-        private const string YOUTUBE_LOG_FILE = @"C:\Users\Gabe\Desktop\YT_Collections_Dump.log";
+        private const string YoutubeLogFile = @"C:\Users\Gabe\Desktop\YT_Collections_Dump.log";
 
         #region BEING USED
 
@@ -103,11 +102,6 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
             }
             while (nextPageToken != null);
 
-        }
-
-        public static void FetchAndInsertNewChannelSubscriptions(YoutubeCollectionsHub hub, string subscriberYoutubeId)
-        {
-            // TODO
         }
 
         public static void InsertCollection(string collectionName, string youtubeId)
@@ -360,12 +354,82 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
                 new CacheItemRemovedCallback(YoutubeTasks.DownloadMissingChannels));
         }
 
+        public static void UpdateSubscriptions(YoutubeCollectionsHub hub, string userYoutubeId)
+        {
+            // Get actual channel id for the subscriber youtube channel
+            int userChannelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
+            Debug.Assert(userChannelId != -1, "Error, fetching subscriptions for non-existant youtube channel id");
+
+            List<string> allYoutubeApiSubscriptions = YoutubeApiHandler.FetchAllSubscriptions(userYoutubeId).OrderBy(x => x).ToList();
+            List<string> allDatabaseSubscriptions = DBHandler.GetYoutubeIdSubscriptionsForUser(userChannelId).OrderBy(x => x).ToList();
+
+            List<string> allAddedSubscriptions = allYoutubeApiSubscriptions.Except(allDatabaseSubscriptions).ToList();
+            List<string> allRemovedSubscriptions = allDatabaseSubscriptions.Except(allYoutubeApiSubscriptions).ToList();
+
+            int index = 1;
+            int total = allAddedSubscriptions.Count;
+            foreach (string addedSubscription in allAddedSubscriptions)
+            {
+                // Insert the subscription and notify user
+                int channelIdBeingSubscribedTo = GetChannelIdFromNewSubscription(addedSubscription);
+                bool areVideosLoaded = DBHandler.DoesItemExist("Videos", "ChannelID", channelIdBeingSubscribedTo);
+
+                ChannelHolder beingSubscribedToChannel = DBHandler.PopulateChannelHolderFromTable(channelIdBeingSubscribedTo, "Title,Thumbnail");
+                DBHandler.InsertSubscription(userChannelId, channelIdBeingSubscribedTo);
+
+                hub.NotifyCallerOfSubscriptionUpdate(new SubscriptionInsertMessage(index++, 
+                                                                                    total, 
+                                                                                    addedSubscription, 
+                                                                                    beingSubscribedToChannel.Title, 
+                                                                                    beingSubscribedToChannel.Thumbnail, 
+                                                                                    areVideosLoaded));
+
+            }
+
+            foreach (string removedSubscription in allRemovedSubscriptions)
+            {
+                // Remove subscription
+                int subscriptionId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", removedSubscription);
+                bool isDeleted = DBHandler.DeleteSubscription(userChannelId, subscriptionId);
+                if (isDeleted)
+                {
+                    // TODO: Remove the subscription from all the user's collections
+                    hub.NotifyCallerOfSubscriptionUpdate(new SubscriptionDeleteMessage(removedSubscription));
+                }
+                
+            }
+
+        }
+
         public static List<string> GetChannelsNotDownloaded(List<string> youtubeIds)
         {
             // If a channel still exists in the ChannelsToDownload table, then 
             // its videos still haven't been downloaded
             return DBHandler.GetChannelsToDownloadYoutubeIdsMatchingList(youtubeIds);
             
+        }
+
+
+        private static int GetChannelIdFromNewSubscription(string beingSubscribedToYoutubeId)
+        {
+            // Get actual channel id for the youtube channel being subscribed to
+            int beingSubscribedToChannelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", beingSubscribedToYoutubeId);
+            if (beingSubscribedToChannelId == -1)
+            {
+                // Channel hasn't been inserted into database yet.
+                InsertYoutubeChannelIdIntoDatabase(beingSubscribedToYoutubeId);
+                beingSubscribedToChannelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", beingSubscribedToYoutubeId);
+            }
+
+            // We can tell if any videos are loaded by seeing if any videos contain the associated channel id
+            bool areVideosLoaded = DBHandler.DoesItemExist("Videos", "ChannelID", beingSubscribedToChannelId);
+            if (!areVideosLoaded)
+            {
+                // If there's no videos for this channel, then we need to flag this channel id to download later
+                DBHandler.InsertChannelIntoChannelsToDownload(beingSubscribedToChannelId);
+            }
+
+            return beingSubscribedToChannelId;
         }
 
         #endregion
@@ -447,7 +511,7 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
                     catch (Exception)
                     {
                         // Log the error and attempt the api query again
-                        using (StreamWriter writer = File.AppendText(YOUTUBE_LOG_FILE))
+                        using (StreamWriter writer = File.AppendText(YoutubeLogFile))
                         {
                             writer.WriteLine(DateTime.Now + "Error on " + channel.Title + " with " + nextPageToken + " as page token");
                         }
@@ -722,7 +786,7 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
                 {
                     Debug.WriteLine(count++ + ". " + channel.Title + " out of date. Fetching latest uploads...");
 
-                    using (StreamWriter writer = File.AppendText(YOUTUBE_LOG_FILE))
+                    using (StreamWriter writer = File.AppendText(YoutubeLogFile))
                     {
                         writer.WriteLine("Fetching latest uploads for " + channel.Title);
                     }

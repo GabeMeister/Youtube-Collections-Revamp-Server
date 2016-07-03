@@ -81,6 +81,26 @@ namespace YoutubeCollectionsRevampServer.Models.ApiModels
 
             return videoRequest.Execute();
         }
+
+        public static List<string> FetchAllSubscriptions(string userYoutubeId)
+        {
+            List<string> youtubeApiSubscriptions = new List<string>();
+            string nextPageToken = "";
+
+            do
+            {
+                SubscriptionListResponse subscriptionsList = FetchSubscriptionsByChannel(userYoutubeId, nextPageToken, "snippet");
+                nextPageToken = subscriptionsList.NextPageToken;
+
+                foreach (var searchResult in subscriptionsList.Items)
+                {
+                    youtubeApiSubscriptions.Add(searchResult.Snippet.ResourceId.ChannelId);
+                }
+            }
+            while (nextPageToken != null);
+
+            return youtubeApiSubscriptions;
+        }
         
 
 
