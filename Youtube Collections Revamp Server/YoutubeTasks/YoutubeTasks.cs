@@ -409,6 +409,17 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
             
         }
 
+        public static void GetChannelsWithVideosInserted(YoutubeCollectionsHub hub, List<string> notLoadedYoutubeIds)
+        {
+            List<string> channelsStillNotLoaded = DBHandler.GetChannelsToDownloadYoutubeIdsMatchingList(notLoadedYoutubeIds);
+            List<string> channelsNowLoaded = notLoadedYoutubeIds.Except(channelsStillNotLoaded).ToList();
+
+            foreach (string loadedChannel in channelsNowLoaded)
+            {
+                hub.NotifyCallerOfChannelVideosInserted(new ChannelVideosInsertMessage(loadedChannel));
+            }
+        }
+        
         // TODO: Remove these
         public static void AddAthlean()
         {

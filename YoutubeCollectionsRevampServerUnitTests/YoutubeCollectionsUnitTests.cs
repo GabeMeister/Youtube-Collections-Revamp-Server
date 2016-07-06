@@ -105,6 +105,15 @@ namespace YoutubeCollectionsRevampServerUnitTests
             YoutubeTasks.UpdateAllMissingChannelUploads();
         }
 
+        [TestMethod]
+        public void FetchSpecificChannel()
+        {
+            string youtubeId = "UCkRMqL3hLrIYhxNCac4vR3w"; // Art of manliness
+            YoutubeTasks.FetchMissingChannelUploads(youtubeId);
+            int channelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", youtubeId);
+            DBHandler.RemoveChannelToDownload(channelId);
+        }
+
         #endregion
 
     }

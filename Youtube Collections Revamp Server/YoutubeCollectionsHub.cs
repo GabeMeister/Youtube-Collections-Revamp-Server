@@ -114,6 +114,11 @@ namespace YoutubeCollectionsRevampServer
             YoutubeTasks.UpdateSubscriptions(this, userYoutubeId);
         }
 
+        public void GetChannelsWithVideosInserted(List<string> notLoadedYoutubeIds)
+        {
+            YoutubeTasks.GetChannelsWithVideosInserted(this, notLoadedYoutubeIds);
+        }
+
         public void AddAthlean()
         {
             YoutubeTasks.AddAthlean();
@@ -153,6 +158,11 @@ namespace YoutubeCollectionsRevampServer
         public void NotifyCallerOfSubscriptionUpdate(SignalRMessage message)
         {
             Clients.Caller.onSubscriptionUpdated(message);
+        }
+
+        public void NotifyCallerOfChannelVideosInserted(SignalRMessage message)
+        {
+            Clients.Caller.onChannelVideosInserted(message);
         }
 
         #endregion

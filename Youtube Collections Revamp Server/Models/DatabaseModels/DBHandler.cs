@@ -310,7 +310,8 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                 return new List<string>();
             }
 
-            List<string> channelsToDownloadIds = new List<string>();
+            var channelsToDownloadIds = new List<string>();
+            var quotedYoutubeIds = new List<string>();
 
             using (var conn = new NpgsqlConnection(DatabaseConnStr))
             {
@@ -320,15 +321,15 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                 // youtubeIds.ForEach(x => Quotify(x));
                 for (int i = 0; i < youtubeIds.Count; i++)
                 {
-                    youtubeIds[i] = Quotify(Sanitize(youtubeIds[i]));
+                    quotedYoutubeIds.Add(Quotify(Sanitize(youtubeIds[i])));
                 }
 
                 string sql = string.Format(@"select c.YoutubeID 
                                             from ChannelsToDownload ctd
                                             inner join Channels c 
                                             on c.ChannelID=ctd.ChannelID
-                                            where c.YoutubeID in ({0});", 
-                                            string.Join(",", youtubeIds));
+                                            where c.YoutubeID in ({0});",
+                                            string.Join(",", quotedYoutubeIds));
                 var selectCommand = new NpgsqlCommand(sql, conn);
 
                 // The user may have no videos, so returning no rows affected is ok
