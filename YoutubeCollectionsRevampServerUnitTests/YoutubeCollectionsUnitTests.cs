@@ -57,6 +57,28 @@ namespace YoutubeCollectionsRevampServerUnitTests
 
         }
 
+        [TestMethod]
+        public void TestAddAthlean()
+        {
+            // Add Athlean x to subscriptions for Gabe J if not there
+            int athleanId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", "UCe0TLA0EsQbE-MjuHXevj2A");
+            int myChannel = Convert.ToInt32(DBHandler.RetrieveColumnBySingleCondition("ChannelID", "Channels", "Title", "Gabe J"));
+
+            DBHandler.InsertSubscription(myChannel, athleanId);
+
+        }
+
+        [TestMethod]
+        public void TestRemoveAthlean()
+        {
+            // Remove Athlean X subscription for Gabe J if there
+            int athleanId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", "UCe0TLA0EsQbE-MjuHXevj2A");
+            int myChannel = Convert.ToInt32(DBHandler.RetrieveColumnBySingleCondition("ChannelID", "Channels", "Title", "Gabe J"));
+
+            DBHandler.DeleteSubscription(myChannel, athleanId);
+
+        }
+
 
         #endregion
 

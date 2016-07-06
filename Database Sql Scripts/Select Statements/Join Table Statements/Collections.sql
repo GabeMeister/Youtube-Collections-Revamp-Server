@@ -12,11 +12,12 @@ where coll.OwnerChannelID=57792
 and coll.Title='Late Night';
 
 
--- Show corresponding channels and collections for all collection items
-select ci.CollectionItemId, ch.Title, co.Title, ci.ItemChannelId 
+-- Show collection items for specific user
+select ci.CollectionItemId, ch.ChannelID, ch.Title, co.Title, ci.ItemChannelId 
 from CollectionItems ci
 inner join Collections co on co.CollectionID=ci.CollectionID
-inner join Channels ch on ch.ChannelID=co.OwnerChannelID;
+inner join Channels ch on ch.ChannelID=co.OwnerChannelID
+where ch.ChannelID=58173;
 
 
 
@@ -43,6 +44,13 @@ and co.Title='Electronic';
 
 
 
-
-
+delete from CollectionItems ci
+where ci.CollectionItemID in
+(
+	select ci.CollectionItemId
+	from CollectionItems ci
+	inner join Collections co on co.CollectionID=ci.CollectionID
+	inner join Channels ch on ch.ChannelID=co.OwnerChannelID
+	where ch.ChannelID=58173
+);
 

@@ -390,12 +390,12 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
             {
                 // Remove subscription
                 int subscriptionId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", removedSubscription);
-                bool isDeleted = DBHandler.DeleteSubscription(userChannelId, subscriptionId);
-                if (isDeleted)
-                {
-                    // TODO: Remove the subscription from all the user's collections
-                    hub.NotifyCallerOfSubscriptionUpdate(new SubscriptionDeleteMessage(removedSubscription));
-                }
+                DBHandler.DeleteSubscription(userChannelId, subscriptionId);
+
+                // Remove subscription from any collections
+                DBHandler.DeleteChannelFromAllUserCollections(userChannelId, subscriptionId);
+                
+                hub.NotifyCallerOfSubscriptionUpdate(new SubscriptionDeleteMessage(removedSubscription));
                 
             }
 
@@ -409,6 +409,24 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
             
         }
 
+        // TODO: Remove these
+        public static void AddAthlean()
+        {
+            // Add Athlean x to subscriptions for Gabe J if not there
+            int athleanId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", "UCe0TLA0EsQbE-MjuHXevj2A");
+            int myChannel = Convert.ToInt32(DBHandler.RetrieveColumnBySingleCondition("ChannelID", "Channels", "Title", "Gabe J"));
+
+            DBHandler.InsertSubscription(myChannel, athleanId);
+        }
+
+        public static void DeleteAthlean()
+        {
+            // Remove Athlean X subscription for Gabe J if there
+            int athleanId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", "UCe0TLA0EsQbE-MjuHXevj2A");
+            int myChannel = Convert.ToInt32(DBHandler.RetrieveColumnBySingleCondition("ChannelID", "Channels", "Title", "Gabe J"));
+
+            DBHandler.DeleteSubscription(myChannel, athleanId);
+        }
 
         private static int GetChannelIdFromNewSubscription(string beingSubscribedToYoutubeId)
         {
@@ -431,6 +449,8 @@ namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
 
             return beingSubscribedToChannelId;
         }
+
+        
 
         #endregion
 

@@ -760,6 +760,45 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             return rowsAffected;
         }
 
+        public static bool DeleteChannelFromAllUserCollections(int collectionItemChannelId, int userChannelId)
+        {
+            Debug.Assert(DoesItemExist("Channels", "ChannelID", collectionItemChannelId), "Trying to delete non-existant collection item.");
+            Debug.Assert(DoesItemExist("Channels", "ChannelID", userChannelId), "Trying to delete collection item for non-existant user channel.");
+
+            bool wasDeleted = false;
+
+            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                NpgsqlCommand command = conn.CreateCommand();
+                command.CommandText = @"delete from CollectionItems ci
+                                        where ci.CollectionItemID in
+                                        (
+	                                        select
+                                            ci.CollectionItemID
+                                            from CollectionItems ci
+                                            inner join Collections co on co.CollectionID=ci.CollectionID
+                                            inner join Channels ownerChannel on ownerChannel.ChannelID=co.OwnerChannelID
+                                            inner join Channels channelItem on channelItem.ChannelID=ci.ItemChannelID
+                                            where ownerChannel.ChannelID=@OwnerChannelID
+                                            and channelItem.ChannelID=@ItemChannelID
+                                        );";
+                command.Parameters.AddWithValue("@OwnerChannelID", userChannelId);
+                command.Parameters.AddWithValue("@ItemChannelID", collectionItemChannelId);
+                
+                int rowsAffected = command.ExecuteNonQuery();
+                if (rowsAffected > 0)
+                {
+                    wasDeleted = true;
+                }
+
+                conn.Close();
+            }
+
+            return wasDeleted;
+        }
+
         public static bool DoesCollectionItemExist(int collectionId, int channelId)
         {
             bool doesExist = false;

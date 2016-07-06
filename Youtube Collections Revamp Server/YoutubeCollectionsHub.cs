@@ -114,6 +114,16 @@ namespace YoutubeCollectionsRevampServer
             YoutubeTasks.UpdateSubscriptions(this, userYoutubeId);
         }
 
+        public void AddAthlean()
+        {
+            YoutubeTasks.AddAthlean();
+        }
+
+        public void DeleteAthlean()
+        {
+            YoutubeTasks.DeleteAthlean();
+        }
+
 
         #endregion
 
