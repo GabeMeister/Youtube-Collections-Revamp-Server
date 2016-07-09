@@ -16,12 +16,6 @@ namespace YoutubeCollectionsRevampServer
     [HubName("YoutubeCollectionsServer")]
     public class YoutubeCollectionsHub : Hub
     {
-        public YoutubeCollectionsHub()
-        {
-            // TODO: Add in cache-expired event handler to update channels
-        }
-
-
         #region SignalR Communication
         public void InsertYoutubeId(string youtubeId)
         {
@@ -104,6 +98,7 @@ namespace YoutubeCollectionsRevampServer
 
         public void GetChannelsNotDownloaded(List<string> youtubeIds)
         {
+            // TODO: I think we have to remove this
             List<string> channelsToDownloadYoutubeIds = YoutubeTasks.GetChannelsNotDownloaded(youtubeIds);
             var message = new ChannelsToDownloadMessage(channelsToDownloadYoutubeIds);
             this.Clients.Caller.onChannelsToDownloadFetched(message);

@@ -14,11 +14,15 @@ select * from Channels where title='Gabe J'; -- 58173
 select * from Channels where title like '%ATHLEAN-X%'; -- 9833
 
 
-select * from Collections co
+select 
+*
+from Collections co
 inner join Channels ch on ch.ChannelID=co.OwnerChannelID;
 
 
-select count(*) from Collections co
+select 
+count(*) 
+from Collections co
 inner join Channels ch on ch.ChannelID=co.OwnerChannelID
 where ch.Title='Gabe J';
 
@@ -38,15 +42,32 @@ where ownerChannel.ChannelID=58176
 and channelItem.ChannelID=9833;
 
 
-delete from CollectionItems ci
-                                        where ci.CollectionItemID in
-                                        (
-	                                        select
-                                            ci.CollectionItemID
-                                            from CollectionItems ci
-                                            inner join Collections co on co.CollectionID=ci.CollectionID
-                                            inner join Channels ownerChannel on ownerChannel.ChannelID=co.OwnerChannelID
-                                            inner join Channels channelItem on channelItem.ChannelID=ci.ItemChannelID
-                                            where ownerChannel.ChannelID=@OwnerChannelID
-                                            and channelItem.ChannelID=@ItemChannelID;
-                                        );
+select 
+*
+from CollectionItems ci;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
