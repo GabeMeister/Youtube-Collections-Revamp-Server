@@ -13,7 +13,8 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 {
     public class DBHandler
     {
-        public static string DatabaseConnStr = @"Server=127.0.0.1;Port=5432;User Id=postgres;Password=4321;Database=YoutubeCollections";
+        //public static string DatabaseConnStr = @"Server=127.0.0.1;Port=5432;User Id=postgres;Password=4321;Database=YoutubeCollections";
+        public static string DatabaseConnStr = @"Server=104.40.49.186;Port=5432;User Id=gabemeister;Password=qwerqwer1234!;Database=youtubecollections";
 
         // ============================ GENERAL
         #region GENERAL
@@ -101,7 +102,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             using (NpgsqlConnection conn = new NpgsqlConnection(DatabaseConnStr))
             {
                 conn.Open();
-
+                
                 string selectSql = SqlBuilder.SelectAllSql(columnToSelect, table);
                 NpgsqlCommand selectCommand = new NpgsqlCommand(selectSql, conn);
                 NpgsqlDataReader reader = selectCommand.ExecuteReader();

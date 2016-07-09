@@ -17,6 +17,12 @@ namespace YoutubeCollectionsRevampServer
     public class YoutubeCollectionsHub : Hub
     {
         #region SignalR Communication
+
+        public void TestConnection()
+        {
+            Clients.Caller.onTestClick();
+        }
+
         public void InsertYoutubeId(string youtubeId)
         {
             YoutubeTasks.InsertYoutubeChannelIdIntoDatabase(youtubeId);

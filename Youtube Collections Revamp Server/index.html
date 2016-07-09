@@ -10,18 +10,19 @@
     <script src="Scripts/jquery-2.2.1.js"></script>
     <script src="Scripts/jquery.signalR-2.2.0.js"></script>
     <script>
-        var HUB_SERVER_URL = 'http://localhost:3851/signalr';
+         var HUB_SERVER_URL = 'https://youtubecollectionsrevampserver.azurewebsites.net/signalr';
+        //var HUB_SERVER_URL = 'http://localhost:3851/signalr';
         var _hubConnection = $.hubConnection(HUB_SERVER_URL);
         var _hub = _hubConnection.createHubProxy('YoutubeCollectionsServer');
-        _hub.on('onCacheRemoved', onCacheRemoved);
+        _hub.on('onTestClick', onTestClick);
         _hubConnection.start();
 
         $('#startBtn').click(function () {
-            _hub.invoke('ModifyHttpCache');
+            _hub.invoke('TestConnection');
         });
 
-        function onCacheRemoved(msg) {
-            $('#startBtn').text(msg);
+        function onTestClick() {
+            $('#startBtn').text('It worked!');
         }
     </script>
 </body>

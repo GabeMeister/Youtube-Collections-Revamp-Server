@@ -1,6 +1,7 @@
-﻿
+﻿select * from WatchedVideos;
+select count(*) from WatchedVideos;
 -- insert into WatchedVideos (ChannelID, VideoID, DateViewed) values (57810, 1124758, '2016-04-09 19:30:12');
--- select * from WatchedVideos;
+
 
 -- select * from WatchedVideos where ChannelID=57810 and VideoID not in (30272, 153309);
 
