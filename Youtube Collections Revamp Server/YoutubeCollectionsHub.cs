@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Web;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
-using YoutubeCollectionsRevampServer.Controllers.YoutubeTasks;
 using YoutubeCollectionsRevampServer.Models.SignalRMessaging;
 using System.Web.Caching;
 using System.Diagnostics;
@@ -22,66 +21,66 @@ namespace YoutubeCollectionsRevampServer
 
         public void InsertYoutubeId(string youtubeId)
         {
-            YoutubeTasks.InsertYoutubeChannelIdIntoDatabase(youtubeId);
+            YoutubeTasks.YoutubeTasks.InsertYoutubeChannelIdIntoDatabase(youtubeId);
             this.Clients.Caller.onChannelIdInserted();
         }
 
         public void FetchAndInsertChannelSubscriptions(string youtubeId)
         {
-            YoutubeTasks.FetchAndInsertChannelSubscriptions(this, youtubeId);
+            YoutubeTasks.YoutubeTasks.FetchAndInsertChannelSubscriptions(this, youtubeId);
             this.Clients.Caller.onSubscriptionsInserted();
         }
 
         public void InsertCollection(string collectionName, string youtubeId)
         {
-            YoutubeTasks.InsertCollection(collectionName, youtubeId);
+            YoutubeTasks.YoutubeTasks.InsertCollection(collectionName, youtubeId);
         }
 
         public void RenameCollection(string oldCollectionTitle, string newCollectionTitle, string userYoutubeId)
         {
-            YoutubeTasks.RenameCollection(oldCollectionTitle, newCollectionTitle, userYoutubeId);
+            YoutubeTasks.YoutubeTasks.RenameCollection(oldCollectionTitle, newCollectionTitle, userYoutubeId);
         }
 
         public void InsertCollectionItem(string collectionItemYoutubeId, string collectionTitle, string userYoutubeId)
         {
-            YoutubeTasks.InsertCollectionItem(collectionItemYoutubeId, collectionTitle, userYoutubeId);
+            YoutubeTasks.YoutubeTasks.InsertCollectionItem(collectionItemYoutubeId, collectionTitle, userYoutubeId);
         }
 
         public void DeleteCollectionItem(string collectionItemYoutubeId, string collectionTitle, string userYoutubeId)
         {
-            YoutubeTasks.DeleteCollectionItem(collectionItemYoutubeId, collectionTitle, userYoutubeId);
+            YoutubeTasks.YoutubeTasks.DeleteCollectionItem(collectionItemYoutubeId, collectionTitle, userYoutubeId);
         }
 
         public void InsertWatchedVideo(string youtubeVideoId, string userYoutubeId, string dateViewed)
         {
-            YoutubeTasks.InsertWatchedVideo(this, youtubeVideoId, userYoutubeId, dateViewed);
+            YoutubeTasks.YoutubeTasks.InsertWatchedVideo(this, youtubeVideoId, userYoutubeId, dateViewed);
         }
 
         public void MarkVideoAsWatched(string youtubeVideoId, string userYoutubeId, string dateViewed)
         {
-            YoutubeTasks.MarkVideoAsWatched(youtubeVideoId, userYoutubeId, dateViewed);
+            YoutubeTasks.YoutubeTasks.MarkVideoAsWatched(youtubeVideoId, userYoutubeId, dateViewed);
         }
 
         public void RestartInitialization()
         {
             // Delete Gabe's channel
-            YoutubeTasks.CompletelyDeleteChannel("UC4LVLoBN0xbOb5xJuA0ia9A");
+            YoutubeTasks.YoutubeTasks.CompletelyDeleteChannel("UC4LVLoBN0xbOb5xJuA0ia9A");
         }
 
         public void RestartCollectionItems()
         {
             // Delete all collection items from Gabe's channel
-            YoutubeTasks.DeleteChannelCollectionItems("UC4LVLoBN0xbOb5xJuA0ia9A");
+            YoutubeTasks.YoutubeTasks.DeleteChannelCollectionItems("UC4LVLoBN0xbOb5xJuA0ia9A");
         }
 
         public void GetUnwatchedVideos(string userYoutubeId, List<string> youtubeIds)
         {
-            YoutubeTasks.GetUnwatchedVideos(this, userYoutubeId, youtubeIds);
+            YoutubeTasks.YoutubeTasks.GetUnwatchedVideos(this, userYoutubeId, youtubeIds);
         }
 
         public void GetVideosForCollection(string userYoutubeId, string collectionTitle)
         {
-            YoutubeTasks.GetVideosForCollection(this, userYoutubeId, collectionTitle);
+            YoutubeTasks.YoutubeTasks.GetVideosForCollection(this, userYoutubeId, collectionTitle);
         }
 
         public void ModifyHttpCache()
@@ -92,7 +91,7 @@ namespace YoutubeCollectionsRevampServer
                 DateTime.Now.AddSeconds(1), 
                 Cache.NoSlidingExpiration, 
                 CacheItemPriority.NotRemovable, 
-                new CacheItemRemovedCallback(YoutubeTasks.DownloadMissingChannels));
+                new CacheItemRemovedCallback(YoutubeTasks.YoutubeTasks.DownloadMissingChannels));
 
             var current = HttpContext.Current;
             string value = current.Cache.Get("NewChannelsToDownloadTimeLeft").ToString();
@@ -102,29 +101,29 @@ namespace YoutubeCollectionsRevampServer
         public void GetChannelsNotDownloaded(List<string> youtubeIds)
         {
             // TODO: I think we have to remove this
-            List<string> channelsToDownloadYoutubeIds = YoutubeTasks.GetChannelsNotDownloaded(youtubeIds);
+            List<string> channelsToDownloadYoutubeIds = YoutubeTasks.YoutubeTasks.GetChannelsNotDownloaded(youtubeIds);
             var message = new ChannelsToDownloadMessage(channelsToDownloadYoutubeIds);
             this.Clients.Caller.onChannelsToDownloadFetched(message);
         }
 
         public void UpdateSubscriptions(string userYoutubeId)
         {
-            YoutubeTasks.UpdateSubscriptions(this, userYoutubeId);
+            YoutubeTasks.YoutubeTasks.UpdateSubscriptions(this, userYoutubeId);
         }
 
         public void GetChannelsWithVideosInserted(List<string> notLoadedYoutubeIds)
         {
-            YoutubeTasks.GetChannelsWithVideosInserted(this, notLoadedYoutubeIds);
+            YoutubeTasks.YoutubeTasks.GetChannelsWithVideosInserted(this, notLoadedYoutubeIds);
         }
 
         public void AddAthlean()
         {
-            YoutubeTasks.AddAthlean();
+            YoutubeTasks.YoutubeTasks.AddAthlean();
         }
 
         public void DeleteAthlean()
         {
-            YoutubeTasks.DeleteAthlean();
+            YoutubeTasks.YoutubeTasks.DeleteAthlean();
         }
 
 

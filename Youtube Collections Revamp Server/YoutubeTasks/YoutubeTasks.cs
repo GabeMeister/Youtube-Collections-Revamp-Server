@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.IO;
-using Npgsql;
-using YoutubeCollectionsRevampServer.Models.SignalRMessaging;
-using YoutubeCollectionsRevampServer.Models.ObjectHolderModels;
-using YoutubeCollectionsRevampServer.Models.DatabaseModels;
-using YoutubeCollectionsRevampServer.Models.ApiModels;
-using Google.Apis.YouTube.v3.Data;
 using System.Diagnostics;
-using System.Web.Caching;
+using System.IO;
+using System.Linq;
 using System.Web;
+using System.Web.Caching;
+using Google.Apis.YouTube.v3.Data;
+using Npgsql;
+using YoutubeCollectionsRevampServer.Models.ApiModels;
+using YoutubeCollectionsRevampServer.Models.DatabaseModels;
+using YoutubeCollectionsRevampServer.Models.ObjectHolderModels;
+using YoutubeCollectionsRevampServer.Models.SignalRMessaging;
 
-
-
-namespace YoutubeCollectionsRevampServer.Controllers.YoutubeTasks
+namespace YoutubeCollectionsRevampServer.YoutubeTasks
 {
     public class YoutubeTasks
     {
