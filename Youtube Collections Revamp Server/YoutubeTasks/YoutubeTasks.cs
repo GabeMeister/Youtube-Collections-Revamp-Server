@@ -1,24 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
 using System.IO;
 using Npgsql;
 using YoutubeCollectionsRevampServer.Models.SignalRMessaging;
 using YoutubeCollectionsRevampServer.Models.ObjectHolderModels;
 using YoutubeCollectionsRevampServer.Models.DatabaseModels;
 using YoutubeCollectionsRevampServer.Models.ApiModels;
-
-using Google.Apis.Auth.OAuth2;
-using Google.Apis.Services;
-using Google.Apis.Upload;
-using Google.Apis.Util.Store;
-using Google.Apis.YouTube.v3;
 using Google.Apis.YouTube.v3.Data;
 using System.Diagnostics;
-using Microsoft.AspNet.SignalR;
 using System.Web.Caching;
 using System.Web;
 

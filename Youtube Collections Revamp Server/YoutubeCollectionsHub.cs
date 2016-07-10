@@ -1,12 +1,9 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Web;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
-using System.Threading;
 using YoutubeCollectionsRevampServer.Controllers.YoutubeTasks;
-using YoutubeCollectionsRevampServer.Models;
 using YoutubeCollectionsRevampServer.Models.SignalRMessaging;
 using System.Web.Caching;
 using System.Diagnostics;

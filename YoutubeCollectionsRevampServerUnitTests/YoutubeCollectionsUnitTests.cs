@@ -4,7 +4,6 @@ using YoutubeCollectionsRevampServer;
 using YoutubeCollectionsRevampServer.Models.DatabaseModels;
 using System.Collections.Generic;
 using System.Linq;
-using YoutubeCollectionsRevampServer.Models.ApiModels;
 using YoutubeCollectionsRevampServer.Controllers.YoutubeTasks;
 
 namespace YoutubeCollectionsRevampServerUnitTests

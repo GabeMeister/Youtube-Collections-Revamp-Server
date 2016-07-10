@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.40629.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Youtube Collections Revamp Server", "Youtube Collections Revamp Server\Youtube Collections Revamp Server.csproj", "{94EB2C2C-FE45-45F1-B5D0-90F7C99A71EB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "YoutubeCollectionsRevampServerUnitTests", "YoutubeCollectionsRevampServerUnitTests\YoutubeCollectionsRevampServerUnitTests.csproj", "{A2958DD9-5A63-4716-873A-7A71C8B83D8A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{94EB2C2C-FE45-45F1-B5D0-90F7C99A71EB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{94EB2C2C-FE45-45F1-B5D0-90F7C99A71EB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{94EB2C2C-FE45-45F1-B5D0-90F7C99A71EB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{94EB2C2C-FE45-45F1-B5D0-90F7C99A71EB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A2958DD9-5A63-4716-873A-7A71C8B83D8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2958DD9-5A63-4716-873A-7A71C8B83D8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2958DD9-5A63-4716-873A-7A71C8B83D8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2958DD9-5A63-4716-873A-7A71C8B83D8A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
