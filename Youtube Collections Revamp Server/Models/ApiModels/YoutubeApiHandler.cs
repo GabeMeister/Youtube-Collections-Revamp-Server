@@ -95,8 +95,6 @@ namespace YoutubeCollectionsRevampServer.Models.ApiModels
             return youtubeApiSubscriptions;
         }
         
-
-
         public static bool DoesChannelHavePublicSubscriptions(string youtubeId)
         {
             bool isAllowed = true;
@@ -113,7 +111,6 @@ namespace YoutubeCollectionsRevampServer.Models.ApiModels
             return isAllowed;
         }
         
-
         private static YouTubeService FetchYoutubeService()
         {
             return new YouTubeService(new BaseClientService.Initializer() { ApiKey = API_KEY });

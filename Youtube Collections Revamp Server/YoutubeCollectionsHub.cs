@@ -12,129 +12,150 @@ namespace YoutubeCollectionsRevampServer
     [HubName("YoutubeCollectionsServer")]
     public class YoutubeCollectionsHub : Hub
     {
-        #region SignalR Communication
+        #region Collections
 
+        public void InsertCollection(string collectionName, string youtubeId)
+        {
+            YoutubeTasks.InsertCollection(collectionName, youtubeId);
+        }
+
+        public void RenameCollection(string oldCollectionTitle, string newCollectionTitle, string userYoutubeId)
+        {
+            YoutubeTasks.RenameCollection(oldCollectionTitle, newCollectionTitle, userYoutubeId);
+        }
+
+        public void DeleteCollection(string collectionTitleToDelete, string userYoutubeId)
+        {
+            // TODO
+        }
+
+        #endregion
+
+        #region Collection Items
+
+        public void InsertCollectionItem(string collectionItemYoutubeId, string collectionTitle, string userYoutubeId)
+        {
+            YoutubeTasks.InsertCollectionItem(collectionItemYoutubeId, collectionTitle, userYoutubeId);
+        }
+
+        public void DeleteCollectionItem(string collectionItemYoutubeId, string collectionTitle, string userYoutubeId)
+        {
+            YoutubeTasks.DeleteCollectionItem(collectionItemYoutubeId, collectionTitle, userYoutubeId);
+        }
+
+        #endregion
+
+        #region Channels
+
+        public void InsertYoutubeId(string youtubeId)
+        {
+            YoutubeTasks.InsertYoutubeChannelIdIntoDatabase(youtubeId);
+            Clients.Caller.onChannelIdInserted();
+        }
+
+        public void GetChannelsWithVideosInserted(List<string> notLoadedYoutubeIds)
+        {
+            YoutubeTasks.GetChannelsWithVideosInserted(this, notLoadedYoutubeIds);
+        }
+
+        #endregion
+
+        #region Subscriptions
+
+        public void FetchAndInsertChannelSubscriptions(string youtubeId)
+        {
+            YoutubeTasks.FetchAndInsertChannelSubscriptions(this, youtubeId);
+            Clients.Caller.onSubscriptionsInserted();
+        }
+
+        public void UpdateSubscriptions(string userYoutubeId)
+        {
+            YoutubeTasks.UpdateSubscriptions(this, userYoutubeId);
+        }
+
+        #endregion
+
+        #region Videos
+
+        public void MarkVideoAsWatched(string youtubeVideoId, string userYoutubeId, string dateViewed)
+        {
+            YoutubeTasks.MarkVideoAsWatched(youtubeVideoId, userYoutubeId, dateViewed);
+        }
+
+        public void GetVideosForCollection(string userYoutubeId, string collectionTitle)
+        {
+            YoutubeTasks.GetVideosForCollection(this, userYoutubeId, collectionTitle);
+        }
+
+        #endregion
+
+        #region Watched Videos
+
+        public void InsertWatchedVideo(string youtubeVideoId, string userYoutubeId, string dateViewed)
+        {
+            YoutubeTasks.InsertWatchedVideo(this, youtubeVideoId, userYoutubeId, dateViewed);
+        }
+
+        public void GetUnwatchedVideos(string userYoutubeId, List<string> youtubeIds)
+        {
+            YoutubeTasks.GetUnwatchedVideos(this, userYoutubeId, youtubeIds);
+        }
+
+        #endregion
+
+        #region Debug Mode
+
+#if DEBUG
         public void TestConnection()
         {
             Clients.Caller.onTestClick();
         }
 
-        public void InsertYoutubeId(string youtubeId)
-        {
-            YoutubeTasks.YoutubeTasks.InsertYoutubeChannelIdIntoDatabase(youtubeId);
-            this.Clients.Caller.onChannelIdInserted();
-        }
-
-        public void FetchAndInsertChannelSubscriptions(string youtubeId)
-        {
-            YoutubeTasks.YoutubeTasks.FetchAndInsertChannelSubscriptions(this, youtubeId);
-            this.Clients.Caller.onSubscriptionsInserted();
-        }
-
-        public void InsertCollection(string collectionName, string youtubeId)
-        {
-            YoutubeTasks.YoutubeTasks.InsertCollection(collectionName, youtubeId);
-        }
-
-        public void RenameCollection(string oldCollectionTitle, string newCollectionTitle, string userYoutubeId)
-        {
-            YoutubeTasks.YoutubeTasks.RenameCollection(oldCollectionTitle, newCollectionTitle, userYoutubeId);
-        }
-
-        public void InsertCollectionItem(string collectionItemYoutubeId, string collectionTitle, string userYoutubeId)
-        {
-            YoutubeTasks.YoutubeTasks.InsertCollectionItem(collectionItemYoutubeId, collectionTitle, userYoutubeId);
-        }
-
-        public void DeleteCollectionItem(string collectionItemYoutubeId, string collectionTitle, string userYoutubeId)
-        {
-            YoutubeTasks.YoutubeTasks.DeleteCollectionItem(collectionItemYoutubeId, collectionTitle, userYoutubeId);
-        }
-
-        public void InsertWatchedVideo(string youtubeVideoId, string userYoutubeId, string dateViewed)
-        {
-            YoutubeTasks.YoutubeTasks.InsertWatchedVideo(this, youtubeVideoId, userYoutubeId, dateViewed);
-        }
-
-        public void MarkVideoAsWatched(string youtubeVideoId, string userYoutubeId, string dateViewed)
-        {
-            YoutubeTasks.YoutubeTasks.MarkVideoAsWatched(youtubeVideoId, userYoutubeId, dateViewed);
-        }
-
         public void RestartInitialization()
         {
             // Delete Gabe's channel
-            YoutubeTasks.YoutubeTasks.CompletelyDeleteChannel("UC4LVLoBN0xbOb5xJuA0ia9A");
+            YoutubeTasks.CompletelyDeleteChannel("UC4LVLoBN0xbOb5xJuA0ia9A");
         }
 
         public void RestartCollectionItems()
         {
             // Delete all collection items from Gabe's channel
-            YoutubeTasks.YoutubeTasks.DeleteChannelCollectionItems("UC4LVLoBN0xbOb5xJuA0ia9A");
-        }
-
-        public void GetUnwatchedVideos(string userYoutubeId, List<string> youtubeIds)
-        {
-            YoutubeTasks.YoutubeTasks.GetUnwatchedVideos(this, userYoutubeId, youtubeIds);
-        }
-
-        public void GetVideosForCollection(string userYoutubeId, string collectionTitle)
-        {
-            YoutubeTasks.YoutubeTasks.GetVideosForCollection(this, userYoutubeId, collectionTitle);
-        }
-        
-        public void GetChannelsNotDownloaded(List<string> youtubeIds)
-        {
-            // TODO: I think we have to remove this
-            List<string> channelsToDownloadYoutubeIds = YoutubeTasks.YoutubeTasks.GetChannelsNotDownloaded(youtubeIds);
-            var message = new ChannelsToDownloadMessage(channelsToDownloadYoutubeIds);
-            this.Clients.Caller.onChannelsToDownloadFetched(message);
-        }
-
-        public void UpdateSubscriptions(string userYoutubeId)
-        {
-            YoutubeTasks.YoutubeTasks.UpdateSubscriptions(this, userYoutubeId);
-        }
-
-        public void GetChannelsWithVideosInserted(List<string> notLoadedYoutubeIds)
-        {
-            YoutubeTasks.YoutubeTasks.GetChannelsWithVideosInserted(this, notLoadedYoutubeIds);
+            YoutubeTasks.DeleteChannelCollectionItems("UC4LVLoBN0xbOb5xJuA0ia9A");
         }
 
         public void AddAthlean()
         {
-            YoutubeTasks.YoutubeTasks.AddAthlean();
+            YoutubeTasks.AddAthlean();
         }
 
         public void DeleteAthlean()
         {
-            YoutubeTasks.YoutubeTasks.DeleteAthlean();
+            YoutubeTasks.DeleteAthlean();
         }
-
+#endif
 
         #endregion
 
-
-
         #region Youtube Callbacks
+
         public void NotifyCaller(SignalRMessage message)
         {
-            this.Clients.Caller.onProgressChanged(message);
+            Clients.Caller.onProgressChanged(message);
         }
 
         public void SendUnrecognizedYoutubeVideoIds(SignalRMessage message)
         {
-            this.Clients.Caller.onRelatedVideosChange(message);
+            Clients.Caller.onRelatedVideosChange(message);
         }
 
         public void SendCollectionVideos(SignalRMessage message)
         {
-            this.Clients.Caller.onRelatedVideosChange(message);
+            Clients.Caller.onRelatedVideosChange(message);
         }
 
         public void NotifyCallerWatchedVideoInserted(SignalRMessage message)
         {
-            this.Clients.Caller.onWatchedVideoInserted(message);
+            Clients.Caller.onWatchedVideoInserted(message);
         }
 
         public void NotifyCallerOfSubscriptionUpdate(SignalRMessage message)
@@ -148,7 +169,6 @@ namespace YoutubeCollectionsRevampServer
         }
 
         #endregion
-
 
     }
 }
