@@ -232,26 +232,6 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             }
         }
 
-        public static void SetAreVideosLoadedForChannel(int channelId, bool areVideosLoaded)
-        {
-            bool exists = DoesItemExist("Channels", "ChannelID", channelId);
-            Debug.Assert(exists, "Non-existant channel id");
-
-            using (var conn = new NpgsqlConnection(DatabaseConnStr))
-            {
-                conn.Open();
-
-                // Now we actually insert the channel because we know it's not in the database
-                string sql = string.Format("update Channels set AreVideosLoaded={0} where ChannelID={1}", areVideosLoaded, channelId);
-                var command = new NpgsqlCommand(sql, conn);
-                int rowsAffected = command.ExecuteNonQuery();
-
-                Debug.Assert(rowsAffected > 0, "Channel update didn't complete correctly.");
-                
-                conn.Close();
-            }
-        }
-
         public static ChannelHolder PopulateChannelHolderFromTable(int channelId, string columnsToSelect)
         {
             ChannelHolder channel = null;

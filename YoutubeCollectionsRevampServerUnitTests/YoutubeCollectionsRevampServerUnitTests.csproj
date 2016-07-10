@@ -114,7 +114,6 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="YoutubeCollectionsLogger.cs" />
     <Compile Include="YoutubeCollectionsUnitTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

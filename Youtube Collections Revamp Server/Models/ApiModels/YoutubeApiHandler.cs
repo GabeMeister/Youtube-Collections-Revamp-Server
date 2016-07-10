@@ -8,7 +8,7 @@ namespace YoutubeCollectionsRevampServer.Models.ApiModels
 {
     public class YoutubeApiHandler
     {
-        private static string API_KEY = "AIzaSyD3PMEr28Ic6lIRisjCQZ1JO98aqHWLpR4";
+        private static readonly string API_KEY = "AIzaSyD3PMEr28Ic6lIRisjCQZ1JO98aqHWLpR4";
         private const int MAX_RESULTS = 50;
 
         public static ChannelListResponse FetchUploadsPlaylistByChannel(string youtubeId, string part)

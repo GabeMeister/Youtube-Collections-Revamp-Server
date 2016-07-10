@@ -82,38 +82,5 @@ namespace YoutubeCollectionsRevampServerUnitTests
         #endregion
 
 
-        #region BACKGROUND SCRIPTS
-        [TestMethod]
-        public void MarkVideosDownloadedOrNot()
-        {
-            List<int> allChannelIds = DbHandler.RetrieveColumnFromTable("ChannelID", "Channels").Select(x => int.Parse(x)).ToList();
-            var logger = new YoutubeCollectionsLogger();
-
-            foreach(int channelId in allChannelIds)
-            {
-                bool areVideosPresent = DbHandler.DoesItemExist("Videos", "ChannelID", channelId);
-                string channelName = DbHandler.RetrieveColumnBySingleCondition("Title", "Channels", "ChannelID", channelId);
-                DbHandler.SetAreVideosLoadedForChannel(channelId, areVideosPresent);
-                logger.Log(string.Format("{0}: {1}", channelName, areVideosPresent ? "yes" : "no"));
-            }
-        }
-
-        [TestMethod]
-        public void UpdateAllChannels()
-        {
-            YoutubeTasks.UpdateAllMissingChannelUploads();
-        }
-
-        [TestMethod]
-        public void FetchSpecificChannel()
-        {
-            string youtubeId = "UCkRMqL3hLrIYhxNCac4vR3w"; // Art of manliness
-            YoutubeTasks.FetchMissingChannelUploads(youtubeId);
-            int channelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", youtubeId);
-            DbHandler.RemoveChannelToDownload(channelId);
-        }
-
-        #endregion
-
     }
 }

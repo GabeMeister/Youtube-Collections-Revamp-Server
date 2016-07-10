@@ -82,22 +82,7 @@ namespace YoutubeCollectionsRevampServer
         {
             YoutubeTasks.YoutubeTasks.GetVideosForCollection(this, userYoutubeId, collectionTitle);
         }
-
-        public void ModifyHttpCache()
-        {
-            HttpRuntime.Cache.Insert("NewChannelsToDownloadTimeLeft", 
-                1, 
-                null, 
-                DateTime.Now.AddSeconds(1), 
-                Cache.NoSlidingExpiration, 
-                CacheItemPriority.NotRemovable, 
-                new CacheItemRemovedCallback(YoutubeTasks.YoutubeTasks.DownloadMissingChannels));
-
-            var current = HttpContext.Current;
-            string value = current.Cache.Get("NewChannelsToDownloadTimeLeft").ToString();
-            Debug.WriteLine(value);
-        }
-
+        
         public void GetChannelsNotDownloaded(List<string> youtubeIds)
         {
             // TODO: I think we have to remove this
