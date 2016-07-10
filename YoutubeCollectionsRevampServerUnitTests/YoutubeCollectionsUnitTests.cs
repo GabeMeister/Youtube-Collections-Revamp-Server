@@ -20,7 +20,7 @@ namespace YoutubeCollectionsRevampServerUnitTests
             var hub = new YoutubeCollectionsHub();
 
             // Make sure we got the right channel id
-            int channelIdToDelete = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", youtubeChannelId);
+            int channelIdToDelete = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", youtubeChannelId);
             Assert.AreNotEqual(channelIdToDelete, -1, "Channel wasn't found");
 
             // We totally start over and remove everything about Gabe's channel
@@ -30,28 +30,28 @@ namespace YoutubeCollectionsRevampServerUnitTests
             // Check that everything was ACTUALLY deleted
 
             // Get the database channel id
-            int channelIdThatShouldNotExist = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", youtubeChannelId);
+            int channelIdThatShouldNotExist = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", youtubeChannelId);
             Assert.AreEqual(channelIdThatShouldNotExist, -1, "Channel still not deleted from database");
 
             // Delete the channel's collections
             // TODO make sure postgres can handle ints to strings
-            string columnValue = DBHandler.RetrieveColumnBySingleCondition("CollectionID", "Collections", "OwnerChannelID", channelIdToDelete.ToString());
+            string columnValue = DbHandler.RetrieveColumnBySingleCondition("CollectionID", "Collections", "OwnerChannelID", channelIdToDelete.ToString());
             Assert.AreEqual(columnValue, null, "Not all collections were removed from database.");
 
             // Delete the channel's uploads videos
-            columnValue = DBHandler.RetrieveColumnBySingleCondition("VideoID", "Videos", "ChannelID", channelIdToDelete);
+            columnValue = DbHandler.RetrieveColumnBySingleCondition("VideoID", "Videos", "ChannelID", channelIdToDelete);
             Assert.AreEqual(columnValue, null, "Not all uploads were removed from database.");
 
             // Delete the channel's watched videos
-            columnValue = DBHandler.RetrieveColumnBySingleCondition("WatchedVideoID", "WatchedVideos", "ChannelID", channelIdToDelete);
+            columnValue = DbHandler.RetrieveColumnBySingleCondition("WatchedVideoID", "WatchedVideos", "ChannelID", channelIdToDelete);
             Assert.AreEqual(columnValue, null, "Not all watched videos were removed from database.");
 
             // Delete the channel's subscriptions
-            columnValue = DBHandler.RetrieveColumnBySingleCondition("SubscriptionID", "Subscriptions", "SubscriberChannelID", channelIdToDelete);
+            columnValue = DbHandler.RetrieveColumnBySingleCondition("SubscriptionID", "Subscriptions", "SubscriberChannelID", channelIdToDelete);
             Assert.AreEqual(columnValue, null, "Not all instances of Gabe's subscriptions were removed from database.");
 
             // Delete subscriptions to the channel
-            columnValue = DBHandler.RetrieveColumnBySingleCondition("SubscriptionID", "Subscriptions", "BeingSubscribedToChannelID", channelIdToDelete);
+            columnValue = DbHandler.RetrieveColumnBySingleCondition("SubscriptionID", "Subscriptions", "BeingSubscribedToChannelID", channelIdToDelete);
             Assert.AreEqual(columnValue, null, "Not all subscriptions to Gabe's channel were removed from database.");
 
         }
@@ -60,10 +60,10 @@ namespace YoutubeCollectionsRevampServerUnitTests
         public void TestAddAthlean()
         {
             // Add Athlean x to subscriptions for Gabe J if not there
-            int athleanId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", "UCe0TLA0EsQbE-MjuHXevj2A");
-            int myChannel = Convert.ToInt32(DBHandler.RetrieveColumnBySingleCondition("ChannelID", "Channels", "Title", "Gabe J"));
+            int athleanId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", "UCe0TLA0EsQbE-MjuHXevj2A");
+            int myChannel = Convert.ToInt32(DbHandler.RetrieveColumnBySingleCondition("ChannelID", "Channels", "Title", "Gabe J"));
 
-            DBHandler.InsertSubscription(myChannel, athleanId);
+            DbHandler.InsertSubscription(myChannel, athleanId);
 
         }
 
@@ -71,10 +71,10 @@ namespace YoutubeCollectionsRevampServerUnitTests
         public void TestRemoveAthlean()
         {
             // Remove Athlean X subscription for Gabe J if there
-            int athleanId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", "UCe0TLA0EsQbE-MjuHXevj2A");
-            int myChannel = Convert.ToInt32(DBHandler.RetrieveColumnBySingleCondition("ChannelID", "Channels", "Title", "Gabe J"));
+            int athleanId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", "UCe0TLA0EsQbE-MjuHXevj2A");
+            int myChannel = Convert.ToInt32(DbHandler.RetrieveColumnBySingleCondition("ChannelID", "Channels", "Title", "Gabe J"));
 
-            DBHandler.DeleteSubscription(myChannel, athleanId);
+            DbHandler.DeleteSubscription(myChannel, athleanId);
 
         }
 
@@ -86,14 +86,14 @@ namespace YoutubeCollectionsRevampServerUnitTests
         [TestMethod]
         public void MarkVideosDownloadedOrNot()
         {
-            List<int> allChannelIds = DBHandler.RetrieveColumnFromTable("ChannelID", "Channels").Select(x => int.Parse(x)).ToList();
+            List<int> allChannelIds = DbHandler.RetrieveColumnFromTable("ChannelID", "Channels").Select(x => int.Parse(x)).ToList();
             var logger = new YoutubeCollectionsLogger();
 
             foreach(int channelId in allChannelIds)
             {
-                bool areVideosPresent = DBHandler.DoesItemExist("Videos", "ChannelID", channelId);
-                string channelName = DBHandler.RetrieveColumnBySingleCondition("Title", "Channels", "ChannelID", channelId);
-                DBHandler.SetAreVideosLoadedForChannel(channelId, areVideosPresent);
+                bool areVideosPresent = DbHandler.DoesItemExist("Videos", "ChannelID", channelId);
+                string channelName = DbHandler.RetrieveColumnBySingleCondition("Title", "Channels", "ChannelID", channelId);
+                DbHandler.SetAreVideosLoadedForChannel(channelId, areVideosPresent);
                 logger.Log(string.Format("{0}: {1}", channelName, areVideosPresent ? "yes" : "no"));
             }
         }
@@ -109,8 +109,8 @@ namespace YoutubeCollectionsRevampServerUnitTests
         {
             string youtubeId = "UCkRMqL3hLrIYhxNCac4vR3w"; // Art of manliness
             YoutubeTasks.FetchMissingChannelUploads(youtubeId);
-            int channelId = DBHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", youtubeId);
-            DBHandler.RemoveChannelToDownload(channelId);
+            int channelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", youtubeId);
+            DbHandler.RemoveChannelToDownload(channelId);
         }
 
         #endregion
