@@ -855,12 +855,16 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                     command.CommandText =
                         "insert into Videos (YoutubeID,ChannelID,Title,Thumbnail,Duration,ViewCount,PublishedAt) values (@YoutubeID,@ChannelID,@Title,@Thumbnail,@Duration,@ViewCount,@PublishedAt);";
                     command.Parameters.AddWithValue("@YoutubeID", video.YoutubeId);
-                    command.Parameters.AddWithValue("@ChannelID", video.ChannelId);
+                    command.Parameters.AddWithValue("@ChannelID", Convert.ToInt32(video.ChannelId.ToString()));
                     command.Parameters.AddWithValue("@Title", video.Title);
                     command.Parameters.AddWithValue("@Thumbnail", video.Thumbnail);
                     command.Parameters.AddWithValue("@Duration", video.Duration);
-                    command.Parameters.AddWithValue("@ViewCount", video.ViewCount);
-                    command.Parameters.AddWithValue("@PublishedAt", video.PublishedAt);
+                    command.Parameters.AddWithValue("@ViewCount", Convert.ToInt32(video.ViewCount.ToString()));
+                    if (video.PublishedAt != null)
+                    {
+                        command.Parameters.AddWithValue("@PublishedAt", video.PublishedAt.Value);
+                    }
+                    
 
                     int rowsAffected = command.ExecuteNonQuery();
                     Debug.Assert(rowsAffected > 0, "Video insert didn't complete correctly.");
@@ -976,7 +980,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                         "insert into WatchedVideos (ChannelID, VideoID, DateViewed) values (@ChannelID, @VideoID, @DateViewed);";
                     command.Parameters.AddWithValue("@ChannelID", channelId);
                     command.Parameters.AddWithValue("@VideoID", videoId);
-                    command.Parameters.AddWithValue("@DateViewed", dateViewed);
+                    command.Parameters.AddWithValue("@DateViewed", DateTime.Parse(dateViewed));
                     
                     int rowsAffected = command.ExecuteNonQuery();
                     Debug.Assert(rowsAffected > 0, "Unable to insert watched video");
