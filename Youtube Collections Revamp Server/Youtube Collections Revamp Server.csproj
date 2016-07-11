@@ -154,7 +154,6 @@
   <ItemGroup>
     <Compile Include="Models\ApiModels\YoutubeApiHandler.cs" />
     <Compile Include="Models\DatabaseModels\DbHandler.cs" />
-    <Compile Include="Models\DatabaseModels\SqlBuilder.cs" />
     <Compile Include="Models\ObjectHolderModels\ChannelHolder.cs" />
     <Compile Include="Models\ObjectHolderModels\CollectionHolder.cs" />
     <Compile Include="Models\ObjectHolderModels\CollectionItemHolder.cs" />
