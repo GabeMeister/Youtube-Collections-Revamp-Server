@@ -1,5 +1,9 @@
 ﻿select * from ChannelsToDownload;
+
+
 select count(*) from ChannelsToDownload;
+
+
 -- delete from ChannelsToDownload
 
 

@@ -1,5 +1,7 @@
-﻿select * from videos limit 100;
+﻿select * from Videos limit 100;
 
-select count(*) from videos;
+select count(*) from Videos;
 
-select * from videos where youtubeid='w_Pplr0hI1s';
+-- delete from Videos;
+
+select * from Videos where youtubeid='w_Pplr0hI1s';

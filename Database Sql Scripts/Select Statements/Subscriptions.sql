@@ -1,5 +1,9 @@
 ﻿select * from Subscriptions s;
+
+
 select count(*) from Subscriptions s;
+
+
 -- delete from Subscriptions s;
 
 
