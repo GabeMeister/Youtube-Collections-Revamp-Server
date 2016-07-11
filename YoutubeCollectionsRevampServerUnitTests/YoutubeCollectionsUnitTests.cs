@@ -80,6 +80,14 @@ namespace YoutubeCollectionsRevampServerUnitTests
 
         #endregion
 
+        #region Debug Tasks
 
+        [TestMethod]
+        public void DeleteUserFromDatabase()
+        {
+            YoutubeTasks.CompletelyDeleteChannel("UC4LVLoBN0xbOb5xJuA0ia9A");
+        }
+
+        #endregion
     }
 }

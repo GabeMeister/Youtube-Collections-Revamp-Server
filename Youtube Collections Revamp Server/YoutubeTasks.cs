@@ -19,6 +19,25 @@ namespace YoutubeCollectionsRevampServer
 
         #region Channels
 
+        public static void InsertNewYoutubeChannelId(YoutubeCollectionsHub hub, string youtubeId)
+        {
+            // Check if the youtube id already exists
+            // TODO: add in logic here for channels that don't have their subscriptions public
+            if (DbHandler.DoesIdExist("Channels", "YoutubeID", youtubeId))
+            {
+                // The user has already registered, they are just logging in from another computer
+                // We need to send all collections data to user
+                hub.NotifyCallerOfExistingYoutubeId();
+            }
+            else
+            {
+                // Channel doesn't exist yet, so we insert it
+                InsertYoutubeChannelIdIntoDatabase(youtubeId);
+                hub.NotifyCallerOfNewYoutubeIdInserted();
+            }
+
+        }
+
         public static ChannelHolder InsertYoutubeChannelIdIntoDatabase(string youtubeId)
         {
             ChannelHolder channel = null;

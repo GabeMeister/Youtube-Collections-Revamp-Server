@@ -1,11 +1,7 @@
-using System;
 using System.Collections.Generic;
-using System.Web;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using YoutubeCollectionsRevampServer.Models.SignalRMessaging;
-using System.Web.Caching;
-using System.Diagnostics;
 
 namespace YoutubeCollectionsRevampServer
 {
@@ -47,10 +43,9 @@ namespace YoutubeCollectionsRevampServer
 
         #region Channels
 
-        public void InsertYoutubeId(string youtubeId)
+        public void InsertNewYoutubeChannelId(string youtubeId)
         {
-            YoutubeTasks.InsertYoutubeChannelIdIntoDatabase(youtubeId);
-            Clients.Caller.onChannelIdInserted();
+            YoutubeTasks.InsertNewYoutubeChannelId(this, youtubeId);
         }
 
         public void GetChannelsWithVideosInserted(List<string> notLoadedYoutubeIds)
@@ -166,6 +161,17 @@ namespace YoutubeCollectionsRevampServer
         public void NotifyCallerOfChannelVideosInserted(SignalRMessage message)
         {
             Clients.Caller.onChannelVideosInserted(message);
+        }
+
+        public void NotifyCallerOfNewYoutubeIdInserted()
+        {
+            Clients.Caller.onNewYoutubeIdInserted();
+            
+        }
+
+        public void NotifyCallerOfExistingYoutubeId()
+        {
+            Clients.Caller.onYoutubeIdAlreadyExists();
         }
 
         #endregion

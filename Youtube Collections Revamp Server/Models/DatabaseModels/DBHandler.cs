@@ -1,6 +1,7 @@
 using Npgsql;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Reflection;
 using YoutubeCollectionsRevampServer.Models.ObjectHolderModels;
@@ -123,9 +124,9 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                     command.Parameters.AddWithValue("@Description", channel.Description);
                     command.Parameters.AddWithValue("@UploadPlaylist", channel.UploadPlaylist);
                     command.Parameters.AddWithValue("@Thumbnail", channel.Thumbnail);
-                    command.Parameters.AddWithValue("@ViewCount", channel.ViewCount);
-                    command.Parameters.AddWithValue("@SubscriberCount", channel.SubscriberCount);
-                    command.Parameters.AddWithValue("@VideoCount", channel.ViewCount);
+                    command.Parameters.AddWithValue("@ViewCount", Convert.ToInt64(channel.ViewCount.ToString()));
+                    command.Parameters.AddWithValue("@SubscriberCount", Convert.ToInt64(channel.SubscriberCount.ToString()));
+                    command.Parameters.AddWithValue("@VideoCount", Convert.ToInt64(channel.ViewCount.ToString()));
 
                     int rowsAffected = command.ExecuteNonQuery();
                     Debug.Assert(rowsAffected > 0, string.Format("Inserting channel {0} didn't complete correctly.", channel.Title));
