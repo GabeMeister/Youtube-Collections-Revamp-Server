@@ -47,16 +47,16 @@ namespace YoutubeCollectionsRevampServer
         private static int GetChannelIdFromNewSubscription(string beingSubscribedToYoutubeId)
         {
             // Get actual channel id for the youtube channel being subscribed to
-            int beingSubscribedToChannelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", beingSubscribedToYoutubeId);
+            int beingSubscribedToChannelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", beingSubscribedToYoutubeId);
             if (beingSubscribedToChannelId == -1)
             {
                 // Channel hasn't been inserted into database yet.
                 InsertYoutubeChannelIdIntoDatabase(beingSubscribedToYoutubeId);
-                beingSubscribedToChannelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", beingSubscribedToYoutubeId);
+                beingSubscribedToChannelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", beingSubscribedToYoutubeId);
             }
 
             // We can tell if any videos are loaded by seeing if any videos contain the associated channel id
-            bool areVideosLoaded = DbHandler.DoesItemExist("Videos", "ChannelID", beingSubscribedToChannelId);
+            bool areVideosLoaded = DbHandler.DoesIdExist("Videos", "ChannelID", beingSubscribedToChannelId);
             if (!areVideosLoaded)
             {
                 // If there's no videos for this channel, then we need to flag this channel id to download later
@@ -76,7 +76,7 @@ namespace YoutubeCollectionsRevampServer
             string nextPageToken = "";
 
             // Get actual channel id for the subscriber youtube channel
-            int subscriberChannelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", subscriberYoutubeId);
+            int subscriberChannelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", subscriberYoutubeId);
             Debug.Assert(subscriberChannelId != -1, "Error, fetching subscriptions for non-existant youtube channel id");
 
             do
@@ -92,16 +92,16 @@ namespace YoutubeCollectionsRevampServer
                     string subscriptionThumbnail = searchResult.Snippet.Thumbnails.Medium.Url.Trim();
 
                     // Get actual channel id for the subscriber youtube channel
-                    int beingSubscribedToChannelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", beingSubscribedToYoutubeId);
+                    int beingSubscribedToChannelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", beingSubscribedToYoutubeId);
                     if (beingSubscribedToChannelId == -1)
                     {
                         // Channel hasn't been inserted into database yet.
                         InsertYoutubeChannelIdIntoDatabase(beingSubscribedToYoutubeId);
-                        beingSubscribedToChannelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", beingSubscribedToYoutubeId);
+                        beingSubscribedToChannelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", beingSubscribedToYoutubeId);
                     }
 
                     // We can tell if any videos are loaded by seeing if any videos contain the associated channel id
-                    bool areVideosLoaded = DbHandler.DoesItemExist("Videos", "ChannelID", beingSubscribedToChannelId);
+                    bool areVideosLoaded = DbHandler.DoesIdExist("Videos", "ChannelID", beingSubscribedToChannelId);
 
                     if (!areVideosLoaded)
                     {
@@ -122,7 +122,7 @@ namespace YoutubeCollectionsRevampServer
         public static void UpdateSubscriptions(YoutubeCollectionsHub hub, string userYoutubeId)
         {
             // Get actual channel id for the subscriber youtube channel
-            int userChannelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
+            int userChannelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
             Debug.Assert(userChannelId != -1, "Error, fetching subscriptions for non-existant youtube channel id");
 
             List<string> allYoutubeApiSubscriptions = YoutubeApiHandler.FetchAllSubscriptions(userYoutubeId).OrderBy(x => x).ToList();
@@ -137,7 +137,7 @@ namespace YoutubeCollectionsRevampServer
             {
                 // Insert the subscription and notify user
                 int channelIdBeingSubscribedTo = GetChannelIdFromNewSubscription(addedSubscription);
-                bool areVideosLoaded = DbHandler.DoesItemExist("Videos", "ChannelID", channelIdBeingSubscribedTo);
+                bool areVideosLoaded = DbHandler.DoesIdExist("Videos", "ChannelID", channelIdBeingSubscribedTo);
 
                 ChannelHolder beingSubscribedToChannel = DbHandler.PopulateChannelHolderFromTable(channelIdBeingSubscribedTo, "Title,Thumbnail");
                 DbHandler.InsertSubscription(userChannelId, channelIdBeingSubscribedTo);
@@ -154,7 +154,7 @@ namespace YoutubeCollectionsRevampServer
             foreach (string removedSubscription in allRemovedSubscriptions)
             {
                 // Remove subscription
-                int subscriptionId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", removedSubscription);
+                int subscriptionId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", removedSubscription);
                 DbHandler.DeleteSubscription(userChannelId, subscriptionId);
 
                 // Remove subscription from any collections
@@ -172,7 +172,7 @@ namespace YoutubeCollectionsRevampServer
 
         public static void InsertCollection(string collectionName, string youtubeId)
         {
-            int channelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", youtubeId);
+            int channelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", youtubeId);
 
             var collectionToInsert = new CollectionHolder(collectionName, youtubeId, channelId);
 
@@ -182,7 +182,7 @@ namespace YoutubeCollectionsRevampServer
 
         public static void RenameCollection(string oldCollectionTitle, string newCollectionTitle, string userYoutubeId)
         {
-            int channelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
+            int channelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
             Debug.Assert(channelId > 0, "Non existant channel id.");
 
             // Get the collection id
@@ -196,7 +196,7 @@ namespace YoutubeCollectionsRevampServer
         public static void GetVideosForCollection(YoutubeCollectionsHub hub, string userYoutubeId, string collectionTitle)
         {
             // Convert youtube id to channel id
-            int channelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
+            int channelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
             Debug.Assert(channelId > 0, "Non existant channel id.");
 
             // Query database to get collection id
@@ -236,7 +236,7 @@ namespace YoutubeCollectionsRevampServer
         public static void InsertCollectionItem(string collectionItemYoutubeId, string collectionTitle, string userYoutubeId)
         {
             // Get the user Id
-            int userChannelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
+            int userChannelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
             Debug.Assert(userChannelId > 0, "Inserting collection item into collection with non-existant channel id.");
 
             // Get collection id
@@ -244,7 +244,7 @@ namespace YoutubeCollectionsRevampServer
             Debug.Assert(collectionId > 0, "Couldn't find correct collection by id");
 
             // Get the collection item id
-            int collectionItemChannelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", collectionItemYoutubeId);
+            int collectionItemChannelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", collectionItemYoutubeId);
             Debug.Assert(collectionItemChannelId > 0, "Couldn't find collection item channel id");
 
             // Insert collection item
@@ -256,7 +256,7 @@ namespace YoutubeCollectionsRevampServer
         public static void DeleteCollectionItem(string collectionItemYoutubeId, string collectionTitle, string userYoutubeId)
         {
             // Get the user Id
-            int userChannelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
+            int userChannelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
             Debug.Assert(userChannelId > 0, "Inserting collection item into collection with non-existant channel id.");
 
             // Get collection id
@@ -264,7 +264,7 @@ namespace YoutubeCollectionsRevampServer
             Debug.Assert(collectionId > 0, "Couldn't find correct collection by id");
 
             // Get the collection item id
-            int collectionItemChannelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", collectionItemYoutubeId);
+            int collectionItemChannelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", collectionItemYoutubeId);
             Debug.Assert(collectionItemChannelId > 0, "Couldn't find collection item channel id");
 
             // Delete collection item
@@ -274,7 +274,7 @@ namespace YoutubeCollectionsRevampServer
         public static void DeleteChannelCollectionItems(string youtubeChannelId)
         {
             // Get the database channel id
-            int channelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", youtubeChannelId);
+            int channelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", youtubeChannelId);
             Debug.Assert(channelId > 0, "Non existant channel id.");
 
             DbHandler.DeleteChannelCollectionItems(channelId);
@@ -287,16 +287,16 @@ namespace YoutubeCollectionsRevampServer
 
         public static void InsertWatchedVideo(YoutubeCollectionsHub hub, string youtubeVideoId, string userYoutubeId, string dateViewed)
         {
-            int channelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
+            int channelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
 
-            if (!DbHandler.DoesItemExist("Videos", "YoutubeID", youtubeVideoId))
+            if (!DbHandler.DoesIdExist("Videos", "YoutubeID", youtubeVideoId))
             {
                 // Might not have video, we need to fetch it's information
                 // and insert it's meta-data into the database
                 FetchVideoInfo(youtubeVideoId);
             }
 
-            int videoId = DbHandler.RetrieveIdFromYoutubeId("VideoID", "Videos", youtubeVideoId);
+            int videoId = DbHandler.SelectChannelIdFromYoutubeId("VideoID", "Videos", youtubeVideoId);
 
             DbHandler.InsertWatchedVideo(videoId, channelId, dateViewed);
 
@@ -306,23 +306,23 @@ namespace YoutubeCollectionsRevampServer
 
         public static void MarkVideoAsWatched(string youtubeVideoId, string userYoutubeId, string dateViewed)
         {
-            int channelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
+            int channelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
 
-            if (!DbHandler.DoesItemExist("Videos", "YoutubeID", youtubeVideoId))
+            if (!DbHandler.DoesIdExist("Videos", "YoutubeID", youtubeVideoId))
             {
                 // Might not have video, we need to fetch it's information
                 // and insert it's meta-data into the database
                 FetchVideoInfo(youtubeVideoId);
             }
 
-            int videoId = DbHandler.RetrieveIdFromYoutubeId("VideoID", "Videos", youtubeVideoId);
+            int videoId = DbHandler.SelectChannelIdFromYoutubeId("VideoID", "Videos", youtubeVideoId);
 
             DbHandler.InsertWatchedVideo(videoId, channelId, dateViewed);
         }
 
         public static void GetUnwatchedVideos(YoutubeCollectionsHub hub, string userYoutubeId, List<string> youtubeVideoIds)
         {
-            int channelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
+            int channelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
             Debug.Assert(channelId > 0, "Non existant channel id.");
 
             List<string> unrecognizedVideoYoutubeIds = new List<string>();
@@ -330,7 +330,7 @@ namespace YoutubeCollectionsRevampServer
 
             foreach (string youtubeVideoId in youtubeVideoIds)
             {
-                int videoId = DbHandler.RetrieveIdFromYoutubeId("VideoID", "Videos", youtubeVideoId);
+                int videoId = DbHandler.SelectChannelIdFromYoutubeId("VideoID", "Videos", youtubeVideoId);
                 if (videoId < 0)
                 {
                     // Video doesn't exist in database, we have to insert it
@@ -365,7 +365,7 @@ namespace YoutubeCollectionsRevampServer
             {
                 VideoHolder video = new VideoHolder(videoResponse);
 
-                int channelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", video.YoutubeChannelId);
+                int channelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", video.YoutubeChannelId);
                 if (channelId < 0)
                 {
                     // Channel doesn't exist in database, we need to insert the channel meta-data
@@ -385,8 +385,8 @@ namespace YoutubeCollectionsRevampServer
         public static void AddAthlean()
         {
             // Add Athlean x to subscriptions for Gabe J if not there
-            int athleanId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", "UCe0TLA0EsQbE-MjuHXevj2A");
-            int myChannel = Convert.ToInt32(DbHandler.RetrieveColumnBySingleCondition("ChannelID", "Channels", "Title", "Gabe J"));
+            int athleanId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", "UCe0TLA0EsQbE-MjuHXevj2A");
+            int myChannel = Convert.ToInt32(DbHandler.SelectColumnBySingleCondition("ChannelID", "Channels", "Title", "Gabe J"));
 
             DbHandler.InsertSubscription(myChannel, athleanId);
         }
@@ -394,8 +394,8 @@ namespace YoutubeCollectionsRevampServer
         public static void DeleteAthlean()
         {
             // Remove Athlean X subscription for Gabe J if there
-            int athleanId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", "UCe0TLA0EsQbE-MjuHXevj2A");
-            int myChannel = Convert.ToInt32(DbHandler.RetrieveColumnBySingleCondition("ChannelID", "Channels", "Title", "Gabe J"));
+            int athleanId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", "UCe0TLA0EsQbE-MjuHXevj2A");
+            int myChannel = Convert.ToInt32(DbHandler.SelectColumnBySingleCondition("ChannelID", "Channels", "Title", "Gabe J"));
 
             DbHandler.DeleteSubscription(myChannel, athleanId);
         }
@@ -403,7 +403,7 @@ namespace YoutubeCollectionsRevampServer
         public static void CompletelyDeleteChannel(string youtubeChannelId)
         {
             // Get the database channel id
-            int channelId = DbHandler.RetrieveIdFromYoutubeId("ChannelID", "Channels", youtubeChannelId);
+            int channelId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", youtubeChannelId);
             Debug.Assert(channelId > 0, "Non existant channel id.");
 
             // Delete the channel's collections

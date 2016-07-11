@@ -19,7 +19,66 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         // ============================ GENERAL
         #region GENERAL
-        public static int RetrieveIdFromYoutubeId(string idColumnToSelect, string table, string youtubeId)
+        
+        public static string SelectColumnBySingleCondition(string columnToSelect, string table, string columnToQuery, string queryValue)
+        {
+            string value = null;
+
+            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                var command = conn.CreateCommand();
+                command.CommandText = string.Format("select {0} from {1} where {2}=@queryValue", 
+                    columnToSelect, 
+                    table,
+                    columnToQuery);
+                command.Parameters.AddWithValue("@queryValue", queryValue);
+
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    reader.Read();
+                    value = reader[columnToSelect].ToString().Trim();
+                }
+
+                conn.Close();
+            }
+
+            return value;
+        }
+
+        public static string SelectColumnBySingleCondition(string columnToSelect, string table, string columnToQuery, int queryValue)
+        {
+            string value = null;
+
+            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                var command = conn.CreateCommand();
+                command.CommandText = string.Format("select {0} from {1} where {2}=@queryValue", columnToSelect, table,
+                    columnToQuery);
+                command.Parameters.AddWithValue("@queryValue", queryValue);
+
+                var reader = command.ExecuteReader();
+                if (reader.HasRows)
+                {
+                    reader.Read();
+                    value = reader[columnToSelect].ToString().Trim();
+                }
+
+                conn.Close();
+            }
+
+            return value;
+        }
+
+        #endregion
+        
+        // ============================ CHANNELS
+        #region CHANNELS
+        public static int SelectChannelIdFromYoutubeId(string idColumnToSelect, string table, string youtubeId)
         {
             int id = -1;
 
@@ -27,10 +86,11 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             {
                 conn.Open();
 
-                string selectSql = SqlBuilder.SelectByIdSql(idColumnToSelect, table, "YoutubeID", youtubeId);
-                var command = new NpgsqlCommand(selectSql, conn);
-                var reader = command.ExecuteReader();
+                var command = conn.CreateCommand();
+                command.CommandText = string.Format("select {0} from {1} where YoutubeID=@YoutubeID;", idColumnToSelect, table);
+                command.Parameters.AddWithValue("@YoutubeID", youtubeId);
 
+                var reader = command.ExecuteReader();
                 if (reader.HasRows)
                 {
                     reader.Read();
@@ -43,126 +103,10 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             return id;
         }
 
-        public static string RetrieveColumnBySingleCondition(string columnToSelect, string table, string columnToQuery, string queryValue)
+        public static void InsertChannel(ChannelHolder channel)
         {
-            string value = null;
-
-            using (var conn = new NpgsqlConnection(DatabaseConnStr))
-            {
-                conn.Open();
-
-                string sql = SqlBuilder.SelectByIdSql(columnToSelect, table, columnToQuery, queryValue);
-                var selectCommand = new NpgsqlCommand(sql, conn);
-                var reader = selectCommand.ExecuteReader();
-
-                if (reader.HasRows)
-                {
-                    reader.Read();
-                    value = reader[columnToSelect].ToString().Trim();
-                }
-
-                conn.Close();
-            }
-
-            return value;
-        }
-
-        public static string RetrieveColumnBySingleCondition(string columnToSelect, string table, string columnToQuery, int queryValue)
-        {
-            string value = null;
-
-            using (var conn = new NpgsqlConnection(DatabaseConnStr))
-            {
-                conn.Open();
-
-                string sql = string.Format(@"select {0} from {1} where {2}={3};", 
-                    Sanitize(columnToSelect),
-                    Sanitize(table), 
-                    Sanitize(columnToQuery), 
-                    Sanitize(queryValue));
-                SqlBuilder.SelectByIdSql(columnToSelect, table, columnToQuery, queryValue);
-                var command = new NpgsqlCommand(sql, conn);
-                var reader = command.ExecuteReader();
-
-                if (reader.HasRows)
-                {
-                    reader.Read();
-                    value = reader[columnToSelect].ToString().Trim();
-                }
-
-                conn.Close();
-            }
-
-            return value;
-        }
-
-        public static List<string> RetrieveColumnFromTable(string columnToSelect, string table)
-        {
-            var youtubeIds = new List<string>();
-
-            using (var conn = new NpgsqlConnection(DatabaseConnStr))
-            {
-                conn.Open();
-                
-                string sql = SqlBuilder.SelectAllSql(columnToSelect, table);
-                var command = new NpgsqlCommand(sql, conn);
-                var reader = command.ExecuteReader();
-
-                if (reader.HasRows)
-                {
-                    while (reader.Read())
-                    {
-                        string youtubeId = reader[columnToSelect].ToString().Trim();
-                        youtubeIds.Add(youtubeId);
-                    }
-                }
-
-                conn.Close();
-            }
-
-            return youtubeIds;
-        }
-
-        public static List<ObjectHolder> RetrieveColumnsFromTable(Type itemType, string columnsToSelect, string table)
-        {
-            var items = new List<ObjectHolder>();
-
-            using (var conn = new NpgsqlConnection(DatabaseConnStr))
-            {
-                conn.Open();
-
-                string sql = SqlBuilder.SelectAllSql(columnsToSelect, table).Replace(";", " offset 3000;");
-                var command = new NpgsqlCommand(sql, conn);
-                var reader = command.ExecuteReader();
-
-                if (reader.HasRows)
-                {
-                    while (reader.Read())
-                    {
-                        ConstructorInfo constructor = itemType.GetConstructor(new[] { typeof(NpgsqlDataReader) });
-                        ObjectHolder newItem = constructor.Invoke(new object[] { reader }) as ObjectHolder;
-
-                        items.Add(newItem);
-                    }
-                }
-
-                conn.Close();
-            }
-
-            return items;
-        }
-
-
-        #endregion
-        
-        // ============================ CHANNELS
-        #region CHANNELS
-        public static int InsertChannel(ChannelHolder channel)
-        {
-            int rowsAffected = 0;
-
             // We check if the same youtube channel id has already been inserted
-            if (!DoesItemExist("Channels", "YoutubeID", channel.YoutubeId))
+            if (!DoesIdExist("Channels", "YoutubeID", channel.YoutubeId))
             {
                 // We first insert the channel into the Channels table
                 using (var conn = new NpgsqlConnection(DatabaseConnStr))
@@ -170,43 +114,47 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                     conn.Open();
 
                     // Now we actually insert the channel because we know it's not in the database
-                    string sql = SqlBuilder.FetchInsertChannelSql(channel);
-                    var insertCommand = new NpgsqlCommand(sql, conn);
-                    rowsAffected = insertCommand.ExecuteNonQuery();
+                    var command = conn.CreateCommand();
+                    command.CommandText =
+                        "insert into Channels (YoutubeID, Title, Description, UploadPlaylist, Thumbnail, ViewCount, SubscriberCount, VideoCount) values " +
+                        "(@YoutubeID, @Title, @Description, @UploadPlaylist, @Thumbnail, @ViewCount, @SubscriberCount, @VideoCount);";
+                    command.Parameters.AddWithValue("@YoutubeID", channel.YoutubeId);
+                    command.Parameters.AddWithValue("@Title", channel.Title);
+                    command.Parameters.AddWithValue("@Description", channel.Description);
+                    command.Parameters.AddWithValue("@UploadPlaylist", channel.UploadPlaylist);
+                    command.Parameters.AddWithValue("@Thumbnail", channel.Thumbnail);
+                    command.Parameters.AddWithValue("@ViewCount", channel.ViewCount);
+                    command.Parameters.AddWithValue("@SubscriberCount", channel.SubscriberCount);
+                    command.Parameters.AddWithValue("@VideoCount", channel.ViewCount);
 
-                    if (rowsAffected < 1)
-                    {
-                        throw new Exception("Channel insert didn't complete correctly.");
-                    }
-
+                    int rowsAffected = command.ExecuteNonQuery();
+                    Debug.Assert(rowsAffected > 0, string.Format("Inserting channel {0} didn't complete correctly.", channel.Title));
+                    
                     conn.Close();
                 }
 
                 // Get the channel id of the channel we just inserted
-                int channelId = RetrieveIdFromYoutubeId("ChannelID", "Channels", channel.YoutubeId);
+                int channelId = SelectChannelIdFromYoutubeId("ChannelID", "Channels", channel.YoutubeId);
 
                 InsertChannelIntoChannelsToDownload(channelId);
-                
             }
-
-            return rowsAffected;
         }
 
         public static void InsertChannelIntoChannelsToDownload(int channelId)
         {
-            if (!DoesItemExist("ChannelsToDownload", "ChannelID", channelId))
+            if (!DoesIdExist("ChannelsToDownload", "ChannelID", channelId))
             {
                 // We then log this channel to the ChannelsToDownload table, as it will have to be queued to download later.
                 using (var conn = new NpgsqlConnection(DatabaseConnStr))
                 {
                     conn.Open();
 
-                    string sql = string.Format("insert into ChannelsToDownload (ChannelID) values ({0});", Sanitize(channelId));
+                    var command = conn.CreateCommand();
+                    command.CommandText = "insert into ChannelsToDownload (ChannelID) values (@ChannelID);";
+                    command.Parameters.AddWithValue("@ChannelID", channelId);
 
-                    var command = new NpgsqlCommand(sql, conn);
-                    int channelsToDownloadRowsAffected = command.ExecuteNonQuery();
-
-                    Debug.Assert(channelsToDownloadRowsAffected > 0, "Channel didn't insert into ChannelsToDownload correctly.");
+                    int rowsAffected = command.ExecuteNonQuery();
+                    Debug.Assert(rowsAffected > 0, string.Format("Channel id of {0} didn't insert into ChannelsToDownload correctly.", channelId));
 
                     conn.Close();
                 }
@@ -215,21 +163,24 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         public static void DeleteChannel(int channelId)
         {
-            Debug.Assert(DoesItemExist("Channels", "ChannelID", channelId), "Deleting non-existant channel");
-
-            // Delete the collection
-            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            if (DoesIdExist("Channels", "ChannelID", channelId))
             {
-                conn.Open();
+                // Delete the collection
+                using (var conn = new NpgsqlConnection(DatabaseConnStr))
+                {
+                    conn.Open();
 
-                string sql = string.Format("delete from Channels where ChannelID={0};", Sanitize(channelId));
-                var deleteCommand = new NpgsqlCommand(sql, conn);
+                    var command = conn.CreateCommand();
+                    command.CommandText = "delete from Channels where ChannelID=@ChannelID;";
+                    command.Parameters.AddWithValue("@ChannelID", channelId);
 
-                // The user may have no videos, so returning no rows affected is ok
-                deleteCommand.ExecuteNonQuery();
+                    // The user may have no videos, so returning no rows affected is ok
+                    command.ExecuteNonQuery();
 
-                conn.Close();
+                    conn.Close();
+                }
             }
+            
         }
 
         public static ChannelHolder PopulateChannelHolderFromTable(int channelId, string columnsToSelect)
@@ -240,12 +191,11 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             {
                 conn.Open();
 
-                string sql = string.Format("select {0} from Channels where ChannelID=@ChannelID;", columnsToSelect);
-                var command = new NpgsqlCommand(sql, conn);
+                var command = conn.CreateCommand();
+                command.CommandText = string.Format("select {0} from Channels where ChannelID=@ChannelID;", columnsToSelect);
                 command.Parameters.AddWithValue("@ChannelID", channelId);
 
                 var reader = command.ExecuteReader();
-
                 if (reader.HasRows && reader.Read())
                 {
                     channel = new ChannelHolder(reader);
@@ -260,23 +210,26 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         // ============================ CHANNELS TO DOWNLOAD
         #region CHANNELS TO DOWNLOAD
-        public static void RemoveChannelToDownload(int channelId)
+        public static void DeleteChannelToDownload(int channelId)
         {
-            Debug.Assert(DoesItemExist("ChannelsToDownload", "ChannelID", channelId), "Deleting non-existant channel to download");
-
-            // Delete the collection
-            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            if (DoesIdExist("ChannelsToDownload", "ChannelID", channelId))
             {
-                conn.Open();
+                // Delete the collection
+                using (var conn = new NpgsqlConnection(DatabaseConnStr))
+                {
+                    conn.Open();
 
-                string sql = string.Format("delete from ChannelsToDownload where ChannelID={0};", Sanitize(channelId));
-                var command = new NpgsqlCommand(sql, conn);
+                    var command = conn.CreateCommand();
+                    command.CommandText = "delete from ChannelsToDownload where ChannelID=@ChannelID;";
+                    command.Parameters.AddWithValue("@ChannelID", channelId);
 
-                // The user may have no videos, so returning no rows affected is ok
-                command.ExecuteNonQuery();
+                    int rowsAffected = command.ExecuteNonQuery();
+                    Debug.Assert(rowsAffected > 0, string.Format("Unable to delete channel id of {0} from ChannelsToDownload table", channelId));
 
-                conn.Close();
+                    conn.Close();
+                }
             }
+            
         }
 
         public static List<string> GetChannelsToDownloadYoutubeIdsMatchingList(List<string> youtubeIds)
@@ -288,36 +241,32 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             }
 
             var channelsToDownloadIds = new List<string>();
-            var quotedYoutubeIds = new List<string>();
-
+            
             using (var conn = new NpgsqlConnection(DatabaseConnStr))
             {
                 conn.Open();
 
-                // TODO: figure out why this isn't working
-                // youtubeIds.ForEach(x => Quotify(x));
+                var command = conn.CreateCommand();
+                var quotedYoutubeIds = new string[youtubeIds.Count];
                 for (int i = 0; i < youtubeIds.Count; i++)
                 {
-                    quotedYoutubeIds.Add(Quotify(Sanitize(youtubeIds[i])));
+                    quotedYoutubeIds[i] = string.Format("@YoutubeID{0}", i);
+                    command.Parameters.AddWithValue(quotedYoutubeIds[i], youtubeIds[i]);
                 }
-
-                string sql = string.Format(@"select c.YoutubeID 
-                                            from ChannelsToDownload ctd
-                                            inner join Channels c 
-                                            on c.ChannelID=ctd.ChannelID
-                                            where c.YoutubeID in ({0});",
-                                            string.Join(",", quotedYoutubeIds));
-                var command = new NpgsqlCommand(sql, conn);
-
+                command.CommandText = string.Format(@"select c.YoutubeID 
+                                                        from ChannelsToDownload ctd
+                                                        inner join Channels c 
+                                                        on c.ChannelID=ctd.ChannelID
+                                                        where c.YoutubeID in ({0});",
+                                                        string.Join(",", quotedYoutubeIds));
+                
                 // The user may have no videos, so returning no rows affected is ok
                 var reader = command.ExecuteReader();
-
                 while(reader.Read())
                 {
                     string youtubeId = reader["YoutubeID"].ToString().Trim();
                     channelsToDownloadIds.Add(youtubeId);
                 }
-
 
                 conn.Close();
             }
@@ -328,16 +277,13 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         // ============================ SUBSCRIPTIONS
         #region SUBSCRIPTIONS
-        public static int InsertSubscription(int subscriberChannelId, int beingSubscribedToChannelId)
+        public static void InsertSubscription(int subscriberChannelId, int beingSubscribedToChannelId)
         {
             if (subscriberChannelId == -1 || beingSubscribedToChannelId == -1)
             {
                 // The id is -1 if the channel doesn't exist or isn't available.
-                return -1;
+                return;
             }
-
-
-            int rowsAffected = 0;
 
             // We check if the subscription already exists.
             if (!DoesSubscriptionExist(subscriberChannelId, beingSubscribedToChannelId))
@@ -346,51 +292,46 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                 {
                     conn.Open();
 
-                    // Now we actually insert the channel because we know it's not in the database
-                    string sql = SqlBuilder.InsertSubscriptionByChannelIdSql(subscriberChannelId, beingSubscribedToChannelId);
-                    var insertCommand = new NpgsqlCommand(sql, conn);
-                    rowsAffected = insertCommand.ExecuteNonQuery();
+                    // Now we actually insert the subscription because we know it's not in the database
+                    var command = conn.CreateCommand();
+                    command.CommandText =
+                        "insert into Subscriptions (SubscriberChannelID, BeingSubscribedToChannelID) values (@SubscriberChannelID, @BeingSubscribedToChannelID);";
+                    command.Parameters.AddWithValue("@SubscriberChannelID", subscriberChannelId);
+                    command.Parameters.AddWithValue("@BeingSubscribedToChannelID", beingSubscribedToChannelId);
 
-                    if (rowsAffected < 1)
-                    {
-                        throw new Exception("Subscription insert didn't complete correctly.");
-                    }
-
+                    int rowsAffected = command.ExecuteNonQuery();
+                    Debug.Assert(rowsAffected > 0, "Subscription insert didn't complete correctly.");
+                    
                     conn.Close();
                 }
             }
-
-            return rowsAffected;
         }
 
-        public static bool DeleteSubscription(int subscriberChannelId, int beingSubscribedToChannelId)
+        public static void DeleteSubscription(int subscriberChannelId, int beingSubscribedToChannelId)
         {
-            Debug.Assert(DoesItemExist("Channels", "ChannelID", subscriberChannelId), "Deleting subscriptions of non-existant channel");
-            Debug.Assert(DoesItemExist("Channels", "ChannelID", beingSubscribedToChannelId), "Channel is being subscribed to a non-existant channel");
+            Debug.Assert(DoesIdExist("Channels", "ChannelID", subscriberChannelId), "Deleting a subscription of non-existant channel");
+            Debug.Assert(DoesIdExist("Channels", "ChannelID", beingSubscribedToChannelId), "Channel is being subscribed to a non-existant channel");
 
-            bool isSuccessful = false;
-
-            // Delete the subscription
-            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            if (DoesSubscriptionExist(subscriberChannelId, beingSubscribedToChannelId))
             {
-                conn.Open();
-
-                var command = new NpgsqlCommand("delete from Subscriptions where SubscriberChannelID=@SubscriberChannelID and BeingSubscribedToChannelID=@BeingSubscribedToChannelID;", conn);
-                command.Parameters.AddWithValue("@SubscriberChannelID", subscriberChannelId);
-                command.Parameters.AddWithValue("@BeingSubscribedToChannelID", beingSubscribedToChannelId);
-
-                // The user may have no watched videos, so returning no rows affected is ok
-                int affectedRows = command.ExecuteNonQuery();
-
-                if (affectedRows > 0)
+                // Delete the subscription
+                using (var conn = new NpgsqlConnection(DatabaseConnStr))
                 {
-                    isSuccessful = true;
+                    conn.Open();
+
+                    var command = conn.CreateCommand();
+                    command.CommandText =
+                        "delete from Subscriptions where SubscriberChannelID=@SubscriberChannelID and BeingSubscribedToChannelID=@BeingSubscribedToChannelID;";
+                    command.Parameters.AddWithValue("@SubscriberChannelID", subscriberChannelId);
+                    command.Parameters.AddWithValue("@BeingSubscribedToChannelID", beingSubscribedToChannelId);
+
+                    int affectedRows = command.ExecuteNonQuery();
+                    Debug.Assert(affectedRows > 0, "Wasn't able to delete subscription.");
+                    
+                    conn.Close();
                 }
-
-                conn.Close();
             }
-
-            return isSuccessful;
+            
         }
 
         public static bool DoesSubscriptionExist(int subscriberChannelId, int beingSubscribedToChannelId)
@@ -401,11 +342,16 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             {
                 conn.Open();
 
-                string selectSql = SqlBuilder.SelectBySubscriberIdsSql("count(*)", subscriberChannelId, beingSubscribedToChannelId);
-                var command = new NpgsqlCommand(selectSql, conn);
-                int count = Convert.ToInt16(command.ExecuteScalar());
+                var command = conn.CreateCommand();
+                command.CommandText = @"select BeingSubscribedToChannelID 
+                                        from Subscriptions 
+                                        where SubscriberChannelID=@SubscriberChannelID 
+                                        and BeingSubscribedToChannelID=@BeingSubscribedToChannelID limit 1;";
+                command.Parameters.AddWithValue("@SubscriberChannelID", subscriberChannelId);
+                command.Parameters.AddWithValue("@BeingSubscribedToChannelID", beingSubscribedToChannelId);
 
-                if (count > 0)
+                var reader = command.ExecuteReader();
+                if (reader.Read())
                 {
                     doesExist = true;
                 }
@@ -416,38 +362,37 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             return doesExist;
         }
         
-        public static void DeleteChannelSubscriptions(int channelId)
+        public static void DeleteChannelSubscriptions(int subscriberChannelId)
         {
-            Debug.Assert(DoesItemExist("Channels", "ChannelID", channelId), "Deleting subscriptions of non-existant channel");
+            Debug.Assert(DoesIdExist("Channels", "ChannelID", subscriberChannelId), "Deleting subscriptions of non-existant channel");
 
             // Delete the collection
             using (var conn = new NpgsqlConnection(DatabaseConnStr))
             {
                 conn.Open();
 
-                string sql = string.Format("delete from Subscriptions where SubscriberChannelID={0};", Sanitize(channelId));
-                var command = new NpgsqlCommand(sql, conn);
+                var command = conn.CreateCommand();
+                command.CommandText = "delete from Subscriptions where SubscriberChannelID=@SubscriberChannelID;";
+                command.Parameters.AddWithValue("@SubscriberChannelID", subscriberChannelId);
 
-                // The user may have no watched videos, so returning no rows affected is ok
                 command.ExecuteNonQuery();
 
                 conn.Close();
             }
         }
 
-        public static void DeleteSubscriptionsToChannel(int channelId)
+        public static void DeleteSubscriptionsToChannel(int beingSubscribedToChannelId)
         {
-            Debug.Assert(DoesItemExist("Channels", "ChannelID", channelId), "Deleting subscriptions TO channel that doesn't exist.");
+            Debug.Assert(DoesIdExist("Channels", "ChannelID", beingSubscribedToChannelId), "Deleting subscriptions to a channel that doesn't exist.");
             
-            // Delete the collection
             using (var conn = new NpgsqlConnection(DatabaseConnStr))
             {
                 conn.Open();
 
-                string sql = string.Format("delete from Subscriptions where BeingSubscribedToChannelID={0};", Sanitize(channelId));
-                var command = new NpgsqlCommand(sql, conn);
+                var command = conn.CreateCommand();
+                command.CommandText = "delete from Subscriptions where BeingSubscribedToChannelID=@BeingSubscribedToChannelID;";
+                command.Parameters.AddWithValue("@BeingSubscribedToChannelID", beingSubscribedToChannelId);
 
-                // There might be no subscribers to the specified channel so that's ok if there's 0 rows affected
                 command.ExecuteNonQuery();
 
                 conn.Close();
@@ -462,15 +407,15 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             {
                 conn.Open();
 
-                var command = new NpgsqlCommand(@"select 
-                                                    c.YoutubeID
-                                                    from Subscriptions s
-                                                    inner join Channels c on c.ChannelID=s.BeingSubscribedToChannelID
-                                                    where s.SubscriberChannelID=@ChannelID;", conn);
+                var command = conn.CreateCommand();
+                command.CommandText = @"select 
+                                        c.YoutubeID
+                                        from Subscriptions s
+                                        inner join Channels c on c.ChannelID=s.BeingSubscribedToChannelID
+                                        where s.SubscriberChannelID=@ChannelID;";
                 command.Parameters.AddWithValue("@ChannelID", channelId);
 
                 var reader = command.ExecuteReader();
-
                 while (reader.Read())
                 {
                     allSubscriptions.Add(reader["YoutubeID"].ToString().Trim());
@@ -487,13 +432,11 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
         // ============================ COLLECTIONS
         #region COLLECTIONS
 
-        public static int InsertCollection(CollectionHolder collection)
+        public static void InsertCollection(CollectionHolder collection)
         {
-            int rowsAffected = 0;
-
             // Check that the owner channel id exists
-            bool exists = DoesItemExist("Channels", "ChannelID", collection.OwnerChannelId);
-            Debug.Assert(exists, "InsertCollection(): Unrecognized youtube channel id: " + collection.OwnerYoutubeChannelId);
+            Debug.Assert(DoesIdExist("Channels", "ChannelID", collection.OwnerChannelId), 
+                "Inserting collection with non-existant owner channel id" + collection.OwnerChannelId);
             
             // Make sure there isn't already a collection with same name
             if (!DoesCollectionExist(collection.OwnerChannelId, collection.Title))
@@ -504,31 +447,34 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                     conn.Open();
 
                     // Now we actually insert the channel because we know it's not in the database
-                    string sql = SqlBuilder.InsertCollectionSql(collection.OwnerChannelId, collection.Title);
-                    var command = new NpgsqlCommand(sql, conn);
-                    rowsAffected = command.ExecuteNonQuery();
+                    var command = conn.CreateCommand();
+                    command.CommandText =
+                        "insert into Collections (OwnerChannelID, Title) values (@OwnerChannelID, @Title);";
+                    command.Parameters.AddWithValue("@OwnerChannelID", collection.OwnerChannelId);
+                    command.Parameters.AddWithValue("@Title", collection.Title);
 
+                    int rowsAffected = command.ExecuteNonQuery();
                     Debug.Assert(rowsAffected > 0, "Collection insert didn't complete correctly.");
 
                     conn.Close();
                 }
             }
 
-
-            return rowsAffected;
         }
 
         public static void RenameCollection(int collectionId, string newCollectionTitle)
         {
-            // Rename the collection
             using (var conn = new NpgsqlConnection(DatabaseConnStr))
             {
                 conn.Open();
 
-                string sql = string.Format("update Collections set title='{0}' where CollectionID={1};", newCollectionTitle, collectionId);
-                var updateCommand = new NpgsqlCommand(sql, conn);
-                int rowsAffected = updateCommand.ExecuteNonQuery();
-                Debug.Assert(rowsAffected > 0, "Collection update didn't complete correctly.");
+                var command = conn.CreateCommand();
+                command.CommandText = "update Collections set Title=@Title where CollectionID=@CollectionID;";
+                command.Parameters.AddWithValue("@Title", newCollectionTitle);
+                command.Parameters.AddWithValue("@CollectionID", collectionId);
+
+                int rowsAffected = command.ExecuteNonQuery();
+                Debug.Assert(rowsAffected > 0, "Collection rename didn't complete correctly.");
 
                 conn.Close();
             }
@@ -537,26 +483,27 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
         public static void DeleteCollection(int collectionId)
         {
             // Check that the collection exists
-            bool exists = DoesItemExist("Collections", "CollectionID", collectionId);
-            Debug.Assert(exists, "Trying to delete non-existant collection.");
-
-            // We have to delete the collection items first
-            DeleteCollectionItemsForCollection(collectionId);
-
-            
-            // Now delete the collection
-            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            if (DoesIdExist("Collections", "CollectionID", collectionId))
             {
-                conn.Open();
+                // We have to delete the collection items first
+                DeleteCollectionItemsForCollection(collectionId);
 
-                string sql = SqlBuilder.DeleteCollectionSql(collectionId);
-                var command = new NpgsqlCommand(sql, conn);
-                int rowsAffected = command.ExecuteNonQuery();
+                // Now delete the collection
+                using (var conn = new NpgsqlConnection(DatabaseConnStr))
+                {
+                    conn.Open();
 
-                Debug.Assert(rowsAffected > 0, "Collection delete didn't complete correctly.");
+                    var command = conn.CreateCommand();
+                    command.CommandText = "delete from Collections where CollectionID=@CollectionID;";
+                    command.Parameters.AddWithValue("@CollectionID", collectionId);
+                    
+                    int rowsAffected = command.ExecuteNonQuery();
+                    Debug.Assert(rowsAffected > 0, "Collection delete didn't complete correctly.");
 
-                conn.Close();
+                    conn.Close();
+                }
             }
+            
 
         }
 
@@ -568,11 +515,13 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             {
                 conn.Open();
 
-                string sql = SqlBuilder.SelectByChannelIdAndCollectionTitle("count(*)", ownerChannelId, collectionTitle);
-                var command = new NpgsqlCommand(sql, conn);
-                int count = Convert.ToInt16(command.ExecuteScalar());
+                var command = conn.CreateCommand();
+                command.CommandText = "select OwnerChannelID from Collections where OwnerChannelID=@OwnerChannelID and Title=@Title limit 1;";
+                command.Parameters.AddWithValue("@OwnerChannelID", ownerChannelId);
+                command.Parameters.AddWithValue("@Title", collectionTitle);
 
-                if (count > 0)
+                var reader = command.ExecuteReader();
+                if (reader.Read())
                 {
                     doesExist = true;
                 }
@@ -585,21 +534,21 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         public static void DeleteChannelCollections(int channelId)
         {
-            Debug.Assert(DoesItemExist("Channels", "ChannelID", channelId), "Deleting collections from non-existant channel");
+            Debug.Assert(DoesIdExist("Channels", "ChannelID", channelId), "Deleting collections from non-existant channel");
 
-            List<int> collectionIds = new List<int>();
+            var collectionIds = new List<int>();
 
             // Get all collections for channel
             using (var conn = new NpgsqlConnection(DatabaseConnStr))
             {
                 conn.Open();
 
-                string sql = string.Format("select CollectionID from Collections where OwnerChannelId={0};", Sanitize(channelId));
-                var command = new NpgsqlCommand(sql, conn);
+                var command = conn.CreateCommand();
+                command.CommandText = "select CollectionID from Collections where OwnerChannelId=@OwnerChannelId;";
+                command.Parameters.AddWithValue("@OwnerChannelId", channelId);
 
                 // The user may have no collections, so returning no rows affected is ok
                 var reader = command.ExecuteReader();
-
                 while(reader.Read())
                 {
                     int collectionId = Convert.ToInt32(reader["CollectionID"].ToString().Trim());
@@ -626,19 +575,17 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             {
                 conn.Open();
 
-                string sql = string.Format("select CollectionID from Collections where OwnerChannelID={0} and Title='{1}';", channelId, title);
-                var command = new NpgsqlCommand(sql, conn);
+                var command = conn.CreateCommand();
+                command.CommandText = "select CollectionID from Collections where OwnerChannelID=@OwnerChannelID and Title=@Title;";
+                command.Parameters.AddWithValue("@OwnerChannelID", channelId);
+                command.Parameters.AddWithValue("@Title", title);
+
                 var reader = command.ExecuteReader();
-                Debug.Assert(reader.HasRows, "Collection not found");
                 reader.Read();
-
-                // We just want the collection id
                 collectionId = Convert.ToInt32(reader["CollectionID"].ToString().Trim());
-
 
                 conn.Close();
             }
-
 
             return collectionId;
         }
@@ -647,26 +594,23 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         // ============================ COLLECTION ITEMS
         #region COLLECTION ITEMS
-        public static int InsertCollectionItem(CollectionItemHolder collectionItem)
+        public static void InsertCollectionItem(CollectionItemHolder collectionItem)
         {
-            int rowsAffected = 0;
+            if (!DoesIdExist("Collections", "CollectionID", collectionItem.CollectionId))
+            {
+                // We ignore requests to insert a collection item for a non-existant collection
+                return;
+            }
+
+            if (!DoesIdExist("Channels", "ChannelID", collectionItem.ItemChannelId))
+            {
+                // We ignore requests to insert a collection item for an item with a non-existant channel id
+                return;
+            }
 
             int collectionId = collectionItem.CollectionId;
             int itemChannelId = collectionItem.ItemChannelId;
-
-            // Check that the collection exists
-            bool exists = DoesItemExist("Collections", "CollectionID", collectionId);
-            Debug.Assert(exists, "Unrecognized youtube collection id: " + collectionId);
-
-            // Check that the channel id exists
-            exists = DoesItemExist("Channels", "ChannelID", itemChannelId);
-            if (!exists)
-            {
-                throw new Exception("Unrecognized channel id: " + itemChannelId);
-            }
-
-
-
+            
             // Make sure there isn't already a channel in the collection with the same name
             if (!DoesCollectionItemExist(collectionId, itemChannelId))
             {
@@ -675,81 +619,91 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                 {
                     conn.Open();
 
-                    string sql = SqlBuilder.InsertCollectionItemSql(collectionId, itemChannelId);
-                    var insertCommand = new NpgsqlCommand(sql, conn);
-                    rowsAffected = insertCommand.ExecuteNonQuery();
+                    var command = conn.CreateCommand();
+                    command.CommandText =
+                        "insert into CollectionItems (CollectionID, ItemChannelID) values (@CollectionID, @ItemChannelID);";
+                    command.Parameters.AddWithValue("@CollectionID", collectionId);
+                    command.Parameters.AddWithValue("@ItemChannelID", itemChannelId);
 
-                    if (rowsAffected < 1)
-                    {
-                        throw new Exception("Collection item insert didn't complete correctly.");
-                    }
+                    int rowsAffected = command.ExecuteNonQuery();
+                    Debug.Assert(rowsAffected > 0, "Collection item insert didn't complete correctly.");
 
                     conn.Close();
                 }
             }
 
-
-
-            return rowsAffected;
         }
 
         public static void InsertCollectionItem(int itemChannelId, int collectionId)
         {
-            // Insert the collection
-            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            if (!DoesIdExist("Collections", "CollectionID", collectionId))
             {
-                conn.Open();
-
-                string sql = @"insert into CollectionItems (CollectionID, ItemChannelID) values (:collID,:channelID);";
-                var command = new NpgsqlCommand(sql, conn);
-                command.Parameters.Add(new NpgsqlParameter("collID", NpgsqlDbType.Integer));
-                command.Parameters.Add(new NpgsqlParameter("channelID", NpgsqlDbType.Integer));
-                command.Parameters[0].Value = collectionId;
-                command.Parameters[1].Value = itemChannelId;
-                
-                int rowsAffected = command.ExecuteNonQuery();
-                Debug.Assert(rowsAffected > 0, "Collection Item insert didn't happen correctly.");
-
-                conn.Close();
+                // We ignore requests to insert a collection item for a non-existant collection
+                return;
             }
+
+            if (!DoesIdExist("Channels", "ChannelID", itemChannelId))
+            {
+                // We ignore requests to insert a collection item for an item with a non-existant channel id
+                return;
+            }
+
+            if (!DoesCollectionItemExist(collectionId, itemChannelId))
+            {
+                // Insert the collection item
+                using (var conn = new NpgsqlConnection(DatabaseConnStr))
+                {
+                    conn.Open();
+
+                    var command = conn.CreateCommand();
+                    command.CommandText =
+                        @"insert into CollectionItems (CollectionID, ItemChannelID) values (@CollectionID, @ItemChannelID);";
+                    command.Parameters.AddWithValue("@CollectionID", collectionId);
+                    command.Parameters.AddWithValue("@ItemChannelID", itemChannelId);
+
+                    int rowsAffected = command.ExecuteNonQuery();
+                    Debug.Assert(rowsAffected > 0, "Collection Item insert didn't happen correctly.");
+
+                    conn.Close();
+                }
+            }
+            
         }
 
-        public static int DeleteCollectionItem(int collectionId, int itemChannelId)
+        public static void DeleteCollectionItem(int collectionId, int itemChannelId)
         {
-            int rowsAffected = 0;
-
             // Check that the collection item exists
-            bool exists = DoesCollectionItemExist(collectionId, itemChannelId);
-            Debug.Assert(exists, "Trying to delete non-existant collection item.");
-
-            // Delete the collection item
-            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            if (DoesCollectionItemExist(collectionId, itemChannelId))
             {
-                conn.Open();
+                // Delete the collection item
+                using (var conn = new NpgsqlConnection(DatabaseConnStr))
+                {
+                    conn.Open();
 
-                string sql = SqlBuilder.DeleteCollectionItemSql(collectionId, itemChannelId);
-                var command = new NpgsqlCommand(sql, conn);
-                rowsAffected = command.ExecuteNonQuery();
-                Debug.Assert(rowsAffected > 0, "Collection item delete didn't complete correctly.");
+                    var command = conn.CreateCommand();
+                    command.CommandText = "delete from CollectionItems where CollectionID=@CollectionID and ItemChannelID=@ItemChannelID;";
+                    command.Parameters.AddWithValue("@CollectionID", collectionId);
+                    command.Parameters.AddWithValue("@ItemChannelID", itemChannelId);
 
-                conn.Close();
+                    int rowsAffected = command.ExecuteNonQuery();
+                    Debug.Assert(rowsAffected > 0, "Collection item delete didn't complete correctly.");
+
+                    conn.Close();
+                }
             }
 
-            return rowsAffected;
         }
 
-        public static bool DeleteChannelFromAllUserCollections(int collectionItemChannelId, int userChannelId)
+        public static void DeleteChannelFromAllUserCollections(int collectionItemChannelId, int userChannelId)
         {
-            Debug.Assert(DoesItemExist("Channels", "ChannelID", collectionItemChannelId), "Trying to delete non-existant collection item.");
-            Debug.Assert(DoesItemExist("Channels", "ChannelID", userChannelId), "Trying to delete collection item for non-existant user channel.");
-
-            bool wasDeleted = false;
+            Debug.Assert(DoesIdExist("Channels", "ChannelID", collectionItemChannelId), "Trying to delete non-existant collection item.");
+            Debug.Assert(DoesIdExist("Channels", "ChannelID", userChannelId), "Trying to delete collection item for non-existant user channel.");
 
             using (var conn = new NpgsqlConnection(DatabaseConnStr))
             {
                 conn.Open();
 
-                NpgsqlCommand command = conn.CreateCommand();
+                var command = conn.CreateCommand();
                 command.CommandText = @"delete from CollectionItems ci
                                         where ci.CollectionItemID in
                                         (
@@ -765,16 +719,11 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                 command.Parameters.AddWithValue("@OwnerChannelID", userChannelId);
                 command.Parameters.AddWithValue("@ItemChannelID", collectionItemChannelId);
                 
-                int rowsAffected = command.ExecuteNonQuery();
-                if (rowsAffected > 0)
-                {
-                    wasDeleted = true;
-                }
-
+                command.ExecuteNonQuery();
+                
                 conn.Close();
             }
 
-            return wasDeleted;
         }
 
         public static bool DoesCollectionItemExist(int collectionId, int channelId)
@@ -785,15 +734,17 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             {
                 conn.Open();
 
-                string sql = SqlBuilder.SelectCollectionItemByChannelId("count(*)", collectionId, channelId);
-                var command = new NpgsqlCommand(sql, conn);
-                int count = Convert.ToInt16(command.ExecuteScalar());
+                var command = conn.CreateCommand();
+                command.CommandText = "select CollectionID from CollectionItems where CollectionID=@CollectionID and ItemChannelID=@ItemChannelID;";
+                command.Parameters.AddWithValue("@CollectionID", collectionId);
+                command.Parameters.AddWithValue("@ItemChannelID", channelId);
 
-                if (count > 0)
+                var reader = command.ExecuteReader();
+                if (reader.Read())
                 {
                     doesExist = true;
                 }
-
+                
                 conn.Close();
             }
 
@@ -802,16 +753,17 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         public static void DeleteCollectionItemsForCollection(int collectionId)
         {
-            bool exists = DoesItemExist("Collections", "CollectionID", collectionId);
-            Debug.Assert(exists, "Attempting to delete items of non-existant collection");
+            Debug.Assert(DoesIdExist("Collections", "CollectionID", collectionId), 
+                "Attempting to delete items of non-existant collection");
 
             // Start by getting all the collection items
             using (var conn = new NpgsqlConnection(DatabaseConnStr))
             {
                 conn.Open();
 
-                string sql = string.Format("delete from CollectionItems where CollectionID={0};", Sanitize(collectionId));
-                var command = new NpgsqlCommand(sql, conn);
+                var command = conn.CreateCommand();
+                command.CommandText = "delete from CollectionItems where CollectionID=@CollectionID;";
+                command.Parameters.AddWithValue("@CollectionID", collectionId);
 
                 // The collection may have no collection items, so returning no rows affected is ok
                 command.ExecuteReader();
@@ -822,21 +774,21 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         public static void DeleteChannelCollectionItems(int channelId)
         {
-            Debug.Assert(DoesItemExist("Channels", "ChannelID", channelId), "Deleting collections from non-existant channel");
+            Debug.Assert(DoesIdExist("Channels", "ChannelID", channelId), "Deleting collections from non-existant channel");
 
-            List<int> collectionIds = new List<int>();
+            var collectionIds = new List<int>();
 
             // Get all collections for channel
             using (var conn = new NpgsqlConnection(DatabaseConnStr))
             {
                 conn.Open();
 
-                string sql = string.Format("select CollectionID from Collections where OwnerChannelId={0};", Sanitize(channelId));
-                var command = new NpgsqlCommand(sql, conn);
+                var command = conn.CreateCommand();
+                command.CommandText = "select CollectionID from Collections where OwnerChannelId=@OwnerChannelId;";
+                command.Parameters.AddWithValue("@OwnerChannelId", channelId);
 
                 // The user may have no collections, so returning no rows affected is ok
                 var reader = command.ExecuteReader();
-
                 while (reader.Read())
                 {
                     int collectionId = Convert.ToInt32(reader["CollectionID"].ToString().Trim());
@@ -855,21 +807,21 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         public static List<int> SelectCollectionItemsByCollectionId(int collectionId)
         {
-            List<int> collectionItemIds = new List<int>();
-            using (var conn = new NpgsqlConnection(DbHandler.DatabaseConnStr))
+            var collectionItemIds = new List<int>();
+            using (var conn = new NpgsqlConnection(DatabaseConnStr))
             {
                 conn.Open();
 
-                string sql = string.Format("select ItemChannelID from CollectionItems where CollectionId={0};", collectionId);
-                var command = new NpgsqlCommand(sql, conn);
-                var reader = command.ExecuteReader();
+                var command = conn.CreateCommand();
+                command.CommandText = "select ItemChannelID from CollectionItems where CollectionId=@CollectionId;";
+                command.Parameters.AddWithValue("@CollectionId", collectionId);
 
+                var reader = command.ExecuteReader();
                 while (reader.Read())
                 {
                     int collectionItemId = Convert.ToInt32(reader["ItemChannelID"].ToString());
                     collectionItemIds.Add(collectionItemId);
                 }
-
 
                 conn.Close();
             }
@@ -881,14 +833,10 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         // ============================ VIDEOS
         #region VIDEOS
-        public static int InsertVideo(VideoHolder video)
+        public static void InsertVideo(VideoHolder video)
         {
-            int rowsAffected = 0;
-
             // We check if the same youtube channel id has already been inserted
-            bool alreadyExists = DoesItemExist("Videos", "YoutubeID", video.YoutubeId);
-
-            if (!alreadyExists)
+            if (!DoesIdExist("Videos", "YoutubeID", video.YoutubeId))
             {
                 // We actually insert the video because we know it's not in the database
                 using (var conn = new NpgsqlConnection(DatabaseConnStr))
@@ -897,34 +845,43 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
                     // Have to get the actual channel id first, from the youtube id
                     // The channel id may or may not be in database already
-                    video.ChannelId = Convert.ToUInt64(RetrieveIdFromYoutubeId("ChannelID", "Channels", video.YoutubeChannelId));
+                    video.ChannelId = Convert.ToUInt64(SelectChannelIdFromYoutubeId("ChannelID", "Channels", video.YoutubeChannelId));
                     Debug.Assert(video.ChannelId > 0, "Inserting video of non-existant channel. Channel must have been already inserted before this point.");
 
                     Debug.WriteLine(video.Title);
 
-                    string insertSQL = SqlBuilder.InsertVideoSql(video);
-                    var insertCommand = new NpgsqlCommand(insertSQL, conn);
-                    rowsAffected = insertCommand.ExecuteNonQuery();
+                    var command = conn.CreateCommand();
+                    command.CommandText =
+                        "insert into Videos (YoutubeID,ChannelID,Title,Thumbnail,Duration,ViewCount,PublishedAt) values (@YoutubeID,@ChannelID,@Title,@Thumbnail,@Duration,@ViewCount,@PublishedAt);";
+                    command.Parameters.AddWithValue("@YoutubeID", video.YoutubeId);
+                    command.Parameters.AddWithValue("@ChannelID", video.ChannelId);
+                    command.Parameters.AddWithValue("@Title", video.Title);
+                    command.Parameters.AddWithValue("@Thumbnail", video.Thumbnail);
+                    command.Parameters.AddWithValue("@Duration", video.Duration);
+                    command.Parameters.AddWithValue("@ViewCount", video.ViewCount);
+                    command.Parameters.AddWithValue("@PublishedAt", video.PublishedAt);
+
+                    int rowsAffected = command.ExecuteNonQuery();
                     Debug.Assert(rowsAffected > 0, "Video insert didn't complete correctly.");
                     
                     conn.Close();
                 }
             }
 
-            return rowsAffected;
         }
         
         public static void DeleteChannelVideos(int channelId)
         {
-            Debug.Assert(DoesItemExist("Channels", "ChannelID", channelId), "Deleting videos of non-existant channel");
+            Debug.Assert(DoesIdExist("Channels", "ChannelID", channelId), "Deleting videos of non-existant channel");
             
             // Delete the collection
             using (var conn = new NpgsqlConnection(DatabaseConnStr))
             {
                 conn.Open();
 
-                string sql = string.Format("delete from videos where ChannelID={0};", Sanitize(channelId));
-                var command = new NpgsqlCommand(sql, conn);
+                var command = conn.CreateCommand();
+                command.CommandText = "delete from videos where ChannelID=@ChannelID;";
+                command.Parameters.AddWithValue("@ChannelID", channelId);
 
                 // The user may have no videos, so returning no rows affected is ok
                 command.ExecuteNonQuery();
@@ -935,15 +892,16 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         public static void DeleteChannelWatchedVideos(int channelId)
         {
-            Debug.Assert(DoesItemExist("Channels", "ChannelID", channelId), "Deleting watched videos of non-existant channel");
+            Debug.Assert(DoesIdExist("Channels", "ChannelID", channelId), "Deleting watched videos of non-existant channel");
 
             // Delete the collection
             using (var conn = new NpgsqlConnection(DatabaseConnStr))
             {
                 conn.Open();
 
-                string sql = string.Format("delete from WatchedVideos where ChannelID={0};", Sanitize(channelId));
-                var command = new NpgsqlCommand(sql, conn);
+                var command = conn.CreateCommand();
+                command.CommandText = "delete from WatchedVideos where ChannelID=@ChannelID;";
+                command.Parameters.AddWithValue("@ChannelID", channelId);
 
                 // The user may have no watched videos, so returning no rows affected is ok
                 command.ExecuteNonQuery();
@@ -952,32 +910,50 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             }
         }
 
-        public static List<VideoHolder> SelectVideoInformationForVideoIds(IEnumerable<int> videoIds)
+        public static List<VideoHolder> SelectVideoInformationForVideoIds(List<int> videoIds)
         {
-            Debug.Assert(videoIds.Count() > 0, "No video ids to query for");
-            
-            List<VideoHolder> collectionVideos = new List<VideoHolder>();
-            using (var conn = new NpgsqlConnection(DbHandler.DatabaseConnStr))
+            if (!videoIds.Any())
+            {
+                // Just return nothing if no video ids were given to us
+                return new List<VideoHolder>();
+            }
+
+            var collectionVideoInfo = new List<VideoHolder>();
+            using (var conn = new NpgsqlConnection(DatabaseConnStr))
             {
                 conn.Open();
 
-                string sql = string.Format(@"select v.YoutubeID, v.ChannelID, v.Title, v.Thumbnail, v.Duration, v.ViewCount, v.PublishedAt, c.Title as ChannelTitle
-                                                    from Videos v 
-                                                    inner join Channels c on v.ChannelID=c.ChannelID
-                                                    where v.VideoID in ({0});", string.Join(",", videoIds));
-                var command = new NpgsqlCommand(sql, conn);
+                var command = conn.CreateCommand();
+                string[] videoPlaceHolders = new string[videoIds.Count];
+                for (int i = 0; i < videoIds.Count; i++)
+                {
+                    videoPlaceHolders[i] = string.Format("@Video{0}", i);
+                    command.Parameters.AddWithValue(videoPlaceHolders[i], videoIds[i]);
+                }
+                command.CommandText =
+                    string.Format(@"select v.YoutubeID, 
+                                            v.ChannelID, 
+                                            v.Title, 
+                                            v.Thumbnail, 
+                                            v.Duration, 
+                                            v.ViewCount, 
+                                            v.PublishedAt, 
+                                            c.Title as ChannelTitle
+                                            from Videos v 
+                                            inner join Channels c on v.ChannelID=c.ChannelID
+                                            where v.VideoID in ({0});", string.Join(",", videoPlaceHolders));
                 var reader = command.ExecuteReader();
 
                 while (reader.Read())
                 {
                     var video = new VideoHolder(reader);
-                    collectionVideos.Add(video);
+                    collectionVideoInfo.Add(video);
                 }
 
                 conn.Close();
             }
 
-            return collectionVideos;
+            return collectionVideoInfo;
         }
 
 
@@ -988,16 +964,18 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         public static void InsertWatchedVideo(int videoId, int channelId, string dateViewed)
         {
-
             if (!DoesWatchedVideoExist(videoId, channelId))
             {
                 using (var conn = new NpgsqlConnection(DatabaseConnStr))
                 {
                     conn.Open();
 
-                    string insertSql = string.Format("insert into WatchedVideos (ChannelID, VideoID, DateViewed) values ({0}, {1}, '{2}');", 
-                        Sanitize(channelId), Sanitize(videoId), Sanitize(dateViewed));
-                    var command = new NpgsqlCommand(insertSql, conn);
+                    var command = conn.CreateCommand();
+                    command.CommandText =
+                        "insert into WatchedVideos (ChannelID, VideoID, DateViewed) values (@ChannelID, @VideoID, @DateViewed);";
+                    command.Parameters.AddWithValue("@ChannelID", channelId);
+                    command.Parameters.AddWithValue("@VideoID", videoId);
+                    command.Parameters.AddWithValue("@DateViewed", dateViewed);
                     
                     int rowsAffected = command.ExecuteNonQuery();
                     Debug.Assert(rowsAffected > 0, "Unable to insert watched video");
@@ -1016,16 +994,14 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             {
                 conn.Open();
 
-                string sql = "select count(*) from WatchedVideos where ChannelID=:channelId and VideoID=:videoId;";
-                var command = new NpgsqlCommand(sql, conn);
-                command.Parameters.Add(new NpgsqlParameter("channelId", NpgsqlDbType.Integer));
-                command.Parameters.Add(new NpgsqlParameter("videoId", NpgsqlDbType.Integer));
-                command.Parameters[0].Value = channelId;
-                command.Parameters[1].Value = videoId;
+                var command = conn.CreateCommand();
+                command.CommandText =
+                    "select ChannelID from WatchedVideos where ChannelID=@ChannelID and VideoID=@VideoID;";
+                command.Parameters.AddWithValue("@ChannelID", channelId);
+                command.Parameters.AddWithValue("@VideoID", videoId);
 
-                int count = Convert.ToInt16(command.ExecuteScalar());
-
-                if (count > 0)
+                var reader = command.ExecuteReader();
+                if (reader.Read())
                 {
                     doesExist = true;
                 }
@@ -1036,42 +1012,44 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             return doesExist;
         }
 
-        public static IEnumerable<string> GetWatchedVideosForUser(int channelId, IEnumerable<int> youtubeVideoIds)
-        {   
-            List<int> watchedVideoIds = new List<int>();
-            List<string> watchedYoutubeIds = new List<string>();
+        public static IEnumerable<string> GetWatchedVideosForUser(int channelId, List<int> youtubeVideoIds)
+        {
+            var watchedYoutubeIds = new List<string>();
 
-            foreach(int videoId in youtubeVideoIds)
+            // We actually insert the video because we know it's not in the database
+            using (var conn = new NpgsqlConnection(DatabaseConnStr))
             {
-                // We actually insert the video because we know it's not in the database
-                using (var conn = new NpgsqlConnection(DatabaseConnStr))
+                conn.Open();
+
+                var command = conn.CreateCommand();
+                var videoPlaceHolders = new string[youtubeVideoIds.Count];
+                for (int i = 0; i < youtubeVideoIds.Count; i++)
                 {
-                    conn.Open();
-
-                    string sql = string.Format("select VideoID from WatchedVideos where ChannelID={0} and VideoID in ({1});", Sanitize(channelId), Sanitize(string.Join(",", youtubeVideoIds)));
-                    var command = new NpgsqlCommand(sql, conn);
-                    var reader = command.ExecuteReader();
-
-                    // Since we're returning the youtube id of the video, we convert the video ids back to youtube ids
-                    while(reader.Read())
-                    {
-                        int watchedVideoId = Convert.ToInt32(reader["VideoID"]);
-                        string watchedYoutubeId = RetrieveColumnBySingleCondition("YoutubeID", "Videos", "VideoID", watchedVideoId.ToString());
-
-                        watchedYoutubeIds.Add(watchedYoutubeId);
-                    }
-                    
-                    conn.Close();
+                    videoPlaceHolders[i] = string.Format("@Video{0}", i);
+                    command.Parameters.AddWithValue(videoPlaceHolders[i], youtubeVideoIds[i]);
                 }
+                command.CommandText = string.Format("select VideoID from WatchedVideos where ChannelID=@ChannelID and VideoID in ({0});", string.Join(",", videoPlaceHolders));
+                
+                var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    // Since we're returning the youtube id of the video, we convert the video ids back to youtube ids
+                    int watchedVideoId = Convert.ToInt32(reader["VideoID"].ToString().Trim());
+                    string watchedYoutubeId = SelectColumnBySingleCondition("YoutubeID", "Videos", "VideoID", watchedVideoId.ToString());
+                    watchedYoutubeIds.Add(watchedYoutubeId);
+                }
+
+                conn.Close();
             }
 
             return watchedYoutubeIds;
         }
 
-        public static IEnumerable<string> GetUnwatchedVideosForUser(int channelId, IEnumerable<int> relatedVideoIds)
+        public static IEnumerable<string> GetUnwatchedVideosForUser(int channelId, List<int> relatedVideoIds)
         {
             if (!relatedVideoIds.Any())
             {
+                // If no related video ids are given, we just return an empty list
                 return new List<string>();
             }
 
@@ -1082,13 +1060,20 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             {
                 conn.Open();
 
-                string sql = string.Format("select VideoID from WatchedVideos where ChannelID='{0}' and VideoID in ({1});", Sanitize(channelId), Sanitize(string.Join(",", relatedVideoIds)));
-                var command = new NpgsqlCommand(sql, conn);
-                var reader = command.ExecuteReader();
+                var command = conn.CreateCommand();
+                var videoPlaceHolders = new string[relatedVideoIds.Count];
+                for (int i = 0; i < relatedVideoIds.Count; i++)
+                {
+                    videoPlaceHolders[i] = string.Format("@Video{0}", i);
+                    command.Parameters.AddWithValue(videoPlaceHolders[i], relatedVideoIds[i]);
+                }
+                command.CommandText = string.Format("select VideoID from WatchedVideos where ChannelID=@ChannelID and VideoID in ({0});", string.Join(",", videoPlaceHolders));
+                command.Parameters.AddWithValue("@ChannelID", channelId);
 
+                var reader = command.ExecuteReader();
                 while (reader.Read())
                 {
-                    int watchedVideoId = Convert.ToInt32(reader["VideoID"]);
+                    int watchedVideoId = Convert.ToInt32(reader["VideoID"].ToString().Trim());
                     if (relatedVideoIds.Contains(watchedVideoId))
                     {
                         watchedVideoIds.Add(watchedVideoId);
@@ -1105,7 +1090,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             foreach(int videoId in unwatchedVideoIds)
             {
                 // Since we're returning the youtube id of the video, we convert the video ids back to youtube ids
-                string youtubeId = RetrieveColumnBySingleCondition("YoutubeID", "Videos", "VideoID", videoId.ToString());
+                string youtubeId = SelectColumnBySingleCondition("YoutubeID", "Videos", "VideoID", videoId.ToString());
                 unwatchedYoutubeIds.Add(youtubeId);
             }
 
@@ -1114,28 +1099,31 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         public static List<int> SelectUnwatchedVideoIdsForUserSubscription(int channelId, int subscriptionId, int numVideos)
         {
-            List<int> collectionVideoIds = new List<int>();
-            using (var conn = new NpgsqlConnection(DbHandler.DatabaseConnStr))
+            var collectionVideoIds = new List<int>();
+
+            using (var conn = new NpgsqlConnection(DatabaseConnStr))
             {
                 conn.Open();
 
-                string sql = string.Format(@"select 
-                                                        v.VideoID 
-                                                        from Channels c 
-                                                        inner join Subscriptions s on s.SubscriberChannelID=c.ChannelID 
-                                                        inner join Channels c2 on s.BeingSubscribedTochannelID=c2.ChannelID 
-                                                        inner join Videos v on v.ChannelID=c2.ChannelID 
-                                                        where c.ChannelID={0}
-                                                        and c2.ChannelID={1}
-                                                        and v.VideoID not in 
-                                                        (select VideoId from WatchedVideos where ChannelID={0})
-                                                        order by v.PublishedAt desc limit {2};", channelId, subscriptionId, numVideos);
-                var command = new NpgsqlCommand(sql, conn);
-                var reader = command.ExecuteReader();
+                var command = conn.CreateCommand();
+                command.CommandText = string.Format(@"select 
+                                                v.VideoID 
+                                                from Channels c 
+                                                inner join Subscriptions s on s.SubscriberChannelID=c.ChannelID 
+                                                inner join Channels c2 on s.BeingSubscribedToChannelID=c2.ChannelID 
+                                                inner join Videos v on v.ChannelID=c2.ChannelID 
+                                                where c.ChannelID=@SubscriberChannelID
+                                                and c2.ChannelID=@BeingSubscribedToChannelID
+                                                and v.VideoID not in 
+                                                (select VideoId from WatchedVideos where ChannelID=@SubscriberChannelID)
+                                                order by v.PublishedAt desc limit {0};", numVideos);
+                command.Parameters.AddWithValue("@SubscriberChannelID", channelId);
+                command.Parameters.AddWithValue("@BeingSubscribedToChannelID", subscriptionId);
 
+                var reader = command.ExecuteReader();
                 while (reader.Read())
                 {
-                    int videoId = Convert.ToInt32(reader["VideoID"].ToString());
+                    int videoId = Convert.ToInt32(reader["VideoID"].ToString().Trim());
                     collectionVideoIds.Add(videoId);
                 }
 
@@ -1150,7 +1138,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
 
         #region Utilities
-        public static bool DoesItemExist(string table, string columnToQuery, string id)
+        public static bool DoesIdExist(string table, string idColumnName, string id)
         {
             bool doesExist = false;
 
@@ -1158,11 +1146,36 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             {
                 conn.Open();
 
-                string sql = SqlBuilder.SelectByIdSql("count(*)", table, columnToQuery, id);
-                var command = new NpgsqlCommand(sql, conn);
-                int count = Convert.ToInt16(command.ExecuteScalar());
+                var command = conn.CreateCommand();
+                command.CommandText = string.Format("select {0} from {1} where {0}=@id limit 1;", idColumnName, table);
+                command.Parameters.AddWithValue("@id", id);
 
-                if (count > 0)
+                var reader = command.ExecuteReader();
+                if (reader.Read())
+                {
+                    doesExist = true;
+                }
+                
+                conn.Close();
+            }
+
+            return doesExist;
+        }
+
+        public static bool DoesIdExist(string table, string idColumnName, int id)
+        {
+            bool doesExist = false;
+
+            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                var command = conn.CreateCommand();
+                command.CommandText = string.Format("select {0} from {1} where {0}=@id limit 1;", idColumnName, table);
+                command.Parameters.AddWithValue("@id", id);
+
+                var reader = command.ExecuteReader();
+                if (reader.Read())
                 {
                     doesExist = true;
                 }
@@ -1172,42 +1185,8 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
             return doesExist;
         }
-
-        public static bool DoesItemExist(string table, string columnToQuery, int id)
-        {
-            bool doesExist = false;
-
-            using (var conn = new NpgsqlConnection(DatabaseConnStr))
-            {
-                conn.Open();
-
-                string sql = SqlBuilder.SelectByIdSql("count(*)", table, columnToQuery, id);
-                var command = new NpgsqlCommand(sql, conn);
-                int count = Convert.ToInt32(command.ExecuteScalar());
-
-                if (count > 0)
-                {
-                    doesExist = true;
-                }
-
-                conn.Close();
-            }
-
-            return doesExist;
-        }
-
-        private static string Sanitize(object str)
-        {
-            return str.ToString().Replace("'", "''").Trim();
-        }
-
-        private static string Quotify(string str)
-        {
-            return "'" + str + "'";
-        }
-
-
         
+
         #endregion
 
     }
