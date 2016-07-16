@@ -859,7 +859,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                     command.Parameters.AddWithValue("@Title", video.Title);
                     command.Parameters.AddWithValue("@Thumbnail", video.Thumbnail);
                     command.Parameters.AddWithValue("@Duration", video.Duration);
-                    command.Parameters.AddWithValue("@ViewCount", Convert.ToInt32(video.ViewCount.ToString()));
+                    command.Parameters.AddWithValue("@ViewCount", Convert.ToInt64(video.ViewCount.ToString()));
                     if (video.PublishedAt != null)
                     {
                         command.Parameters.AddWithValue("@PublishedAt", video.PublishedAt.Value);

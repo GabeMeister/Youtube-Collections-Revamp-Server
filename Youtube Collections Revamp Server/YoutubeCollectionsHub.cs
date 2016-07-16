@@ -166,7 +166,6 @@ namespace YoutubeCollectionsRevampServer
         public void NotifyCallerOfNewYoutubeIdInserted()
         {
             Clients.Caller.onNewYoutubeIdInserted();
-            
         }
 
         public void NotifyCallerOfExistingYoutubeId()

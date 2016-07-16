@@ -5,7 +5,7 @@
 	Title CHAR(150) NOT NULL,
 	Thumbnail CHAR(100),
 	Duration CHAR(15),
-	ViewCount INT,
+	ViewCount BIGINT,
 	PublishedAt TIMESTAMP
 );
 
