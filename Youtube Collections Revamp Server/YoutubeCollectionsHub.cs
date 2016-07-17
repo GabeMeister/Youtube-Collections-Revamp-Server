@@ -22,7 +22,7 @@ namespace YoutubeCollectionsRevampServer
 
         public void DeleteCollection(string collectionTitleToDelete, string userYoutubeId)
         {
-            // TODO
+            YoutubeTasks.DeleteCollection(collectionTitleToDelete, userYoutubeId);
         }
 
         public void SyncUserData(string userYoutubeId)
@@ -97,12 +97,7 @@ namespace YoutubeCollectionsRevampServer
         {
             YoutubeTasks.InsertWatchedVideo(this, youtubeVideoId, userYoutubeId, dateViewed);
         }
-
-        public void GetUnwatchedVideos(string userYoutubeId, List<string> youtubeIds)
-        {
-            YoutubeTasks.GetUnwatchedVideos(this, userYoutubeId, youtubeIds);
-        }
-
+        
         #endregion
 
         #region Debug Mode

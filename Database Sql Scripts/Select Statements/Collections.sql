@@ -39,16 +39,15 @@ from CollectionItems ci
 inner join Collections co on co.CollectionID=ci.CollectionID
 inner join Channels ownerChannel on ownerChannel.ChannelID=co.OwnerChannelID
 inner join Channels channelItem on channelItem.ChannelID=ci.ItemChannelID
-where ownerChannel.ChannelID=58176
-and channelItem.ChannelID=9833;
+where ownerChannel.Title='Gabe J';
 
 
 select 
-ch.ChannelID,ch.YoutubeID,ch.Title,coll.CollectionID,coll.Title
+ch.ChannelID,ch.Title,coll.Title
 from Channels ch
 inner join Collections coll
 on ch.ChannelID=coll.OwnerChannelID
-where ch.YoutubeID='UC4LVLoBN0xbOb5xJuA0ia9A';
+where ch.Title='Gabe J';
 
 
 -- All Collections showing channels with it
@@ -110,7 +109,7 @@ inner join Subscriptions s on s.SubscriberChannelID=c.ChannelID
 inner join Channels c2 on s.BeingSubscribedTochannelID=c2.ChannelID
 inner join Videos v on v.ChannelID=c2.ChannelID
 where 
-c.ChannelID=57810  -- Gabe J's channel
+c.Title='Gabe J'  -- Gabe J's channel
 and c2.ChannelID=91 -- The channel being subscribed to
 and v.VideoID not in
 (

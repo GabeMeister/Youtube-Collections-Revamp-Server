@@ -84,6 +84,32 @@ namespace YoutubeCollectionsRevampServer
             return beingSubscribedToChannelId;
         }
 
+        public static void CompletelyDeleteChannel(string youtubeChannelId)
+        {
+            // Get the database channel id
+            int channelId = DbHandler.SelectIdFromYoutubeId("ChannelID", "Channels", youtubeChannelId);
+            Debug.Assert(channelId > 0, "Non existant channel id.");
+
+            // Delete the channel's collections
+            DbHandler.DeleteChannelCollections(channelId);
+
+            // Delete the channel's uploads videos
+            DbHandler.DeleteChannelVideos(channelId);
+
+            // Delete the channel's watched videos
+            DbHandler.DeleteChannelWatchedVideos(channelId);
+
+            // Delete the channel's subscriptions
+            DbHandler.DeleteChannelSubscriptions(channelId);
+
+            // Delete subscriptions to the channel
+            DbHandler.DeleteSubscriptionsToChannel(channelId);
+
+            // Delete the channel itself
+            DbHandler.DeleteChannel(channelId);
+
+
+        }
         #endregion
 
         #region Subscriptions
@@ -180,7 +206,7 @@ namespace YoutubeCollectionsRevampServer
                 hub.NotifyCallerOfSubscriptionUpdate(new SubscriptionDeleteMessage(removedSubscription));
 
             }
-
+            
         }
 
         #endregion
@@ -208,6 +234,21 @@ namespace YoutubeCollectionsRevampServer
 
             DbHandler.RenameCollection(collectionId, newCollectionTitle);
 
+        }
+
+        public static void DeleteCollection(string collectionTitle, string userYoutubeId)
+        {
+            int channelId = DbHandler.SelectIdFromYoutubeId("ChannelID", "Channels", userYoutubeId);
+            if (channelId > -1)
+            {
+                // Get the collection id
+                int collectionId = DbHandler.SelectCollectionIdByChannelIdAndTitle(channelId, collectionTitle);
+                if (collectionId > -1)
+                {
+                    DbHandler.DeleteCollection(collectionId);
+                }
+            }
+            
         }
 
         public static void GetVideosForCollection(YoutubeCollectionsHub hub, string userYoutubeId, string collectionTitle)
@@ -452,32 +493,7 @@ namespace YoutubeCollectionsRevampServer
             DbHandler.DeleteSubscription(myChannel, athleanId);
         }
 
-        public static void CompletelyDeleteChannel(string youtubeChannelId)
-        {
-            // Get the database channel id
-            int channelId = DbHandler.SelectIdFromYoutubeId("ChannelID", "Channels", youtubeChannelId);
-            Debug.Assert(channelId > 0, "Non existant channel id.");
-
-            // Delete the channel's collections
-            DbHandler.DeleteChannelCollections(channelId);
-
-            // Delete the channel's uploads videos
-            DbHandler.DeleteChannelVideos(channelId);
-
-            // Delete the channel's watched videos
-            DbHandler.DeleteChannelWatchedVideos(channelId);
-
-            // Delete the channel's subscriptions
-            DbHandler.DeleteChannelSubscriptions(channelId);
-
-            // Delete subscriptions to the channel
-            DbHandler.DeleteSubscriptionsToChannel(channelId);
-
-            // Delete the channel itself
-            DbHandler.DeleteChannel(channelId);
-
-
-        }
+        
 #endif
 
         #endregion

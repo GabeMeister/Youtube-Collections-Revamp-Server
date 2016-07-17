@@ -12,11 +12,8 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 {
     public class DbHandler
     {
-#if DEBUG
-        public static string DatabaseConnStr = @"Server=127.0.0.1;Port=5432;User Id=postgres;Password=4321;Database=YoutubeCollections";
-#else
+        //public static string DatabaseConnStr = @"Server=127.0.0.1;Port=5432;User Id=postgres;Password=4321;Database=YoutubeCollections";
         public static string DatabaseConnStr = @"Server=104.40.49.186;Port=5432;User Id=gabemeister;Password=qwerqwer1234!;Database=youtubecollections";
-#endif
 
         // ============================ GENERAL
         #region GENERAL
@@ -84,7 +81,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                 conn.Open();
 
                 var command = conn.CreateCommand();
-                command.CommandText = string.Format("select {0} from {1} where YoutubeID=@YoutubeID;", idColumnToSelect, table);
+                command.CommandText = string.Format("select {0} from {1} where YoutubeID=@YoutubeID limit 1;", idColumnToSelect, table);
                 command.Parameters.AddWithValue("@YoutubeID", youtubeId);
 
                 var reader = command.ExecuteReader();
