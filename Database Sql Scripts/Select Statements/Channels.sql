@@ -38,7 +38,11 @@ group by c.ChannelID
 order by count(*) desc;
 
 
-
+select 
+Title,VideoCount,ViewCount
+from Channels 
+where viewcount=videocount 
+and videoCount != 0;
 
 
 

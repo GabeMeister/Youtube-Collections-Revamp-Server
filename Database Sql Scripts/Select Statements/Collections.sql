@@ -6,8 +6,9 @@ select count(*) from Collections;
 select count(*) from CollectionItems;
 
 
--- delete from Collections;
--- delete from CollectionItems;
+delete from CollectionItems;
+delete from Collections;
+
 
 
 select * from Channels where title='Gabe J'; -- 58173
@@ -69,7 +70,7 @@ select ci.CollectionItemId, ch.ChannelID, ch.Title, co.Title, ci.ItemChannelId
 from CollectionItems ci
 inner join Collections co on co.CollectionID=ci.CollectionID
 inner join Channels ch on ch.ChannelID=co.OwnerChannelID
-where ch.ChannelID=58173;
+where ch.Title='Gabe J';
 
 
 
@@ -118,8 +119,6 @@ where ChannelID=57810
 )
 order by v.PublishedAt desc
 limit 5;
-
-
 
 
 

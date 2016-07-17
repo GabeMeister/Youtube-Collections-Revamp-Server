@@ -16,24 +16,18 @@ namespace YoutubeCollectionsRevampServerUnitTests
         {
             // Gabe J youtube channel id
             string youtubeChannelId = "UC4LVLoBN0xbOb5xJuA0ia9A";
-            var hub = new YoutubeCollectionsHub();
-
+            
             // Make sure we got the right channel id
-            int channelIdToDelete = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", youtubeChannelId);
+            int channelIdToDelete = DbHandler.SelectIdFromYoutubeId("ChannelID", "Channels", youtubeChannelId);
             Assert.AreNotEqual(channelIdToDelete, -1, "Channel wasn't found");
-
-            // We totally start over and remove everything about Gabe's channel
-            hub.RestartInitialization();
-
-
+            
             // Check that everything was ACTUALLY deleted
 
             // Get the database channel id
-            int channelIdThatShouldNotExist = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", youtubeChannelId);
+            int channelIdThatShouldNotExist = DbHandler.SelectIdFromYoutubeId("ChannelID", "Channels", youtubeChannelId);
             Assert.AreEqual(channelIdThatShouldNotExist, -1, "Channel still not deleted from database");
 
             // Delete the channel's collections
-            // TODO make sure postgres can handle ints to strings
             string columnValue = DbHandler.SelectColumnBySingleCondition("CollectionID", "Collections", "OwnerChannelID", channelIdToDelete.ToString());
             Assert.AreEqual(columnValue, null, "Not all collections were removed from database.");
 
@@ -59,7 +53,7 @@ namespace YoutubeCollectionsRevampServerUnitTests
         public void TestAddAthlean()
         {
             // Add Athlean x to subscriptions for Gabe J if not there
-            int athleanId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", "UCe0TLA0EsQbE-MjuHXevj2A");
+            int athleanId = DbHandler.SelectIdFromYoutubeId("ChannelID", "Channels", "UCe0TLA0EsQbE-MjuHXevj2A");
             int myChannel = Convert.ToInt32(DbHandler.SelectColumnBySingleCondition("ChannelID", "Channels", "Title", "Gabe J"));
 
             DbHandler.InsertSubscription(myChannel, athleanId);
@@ -70,7 +64,7 @@ namespace YoutubeCollectionsRevampServerUnitTests
         public void TestRemoveAthlean()
         {
             // Remove Athlean X subscription for Gabe J if there
-            int athleanId = DbHandler.SelectChannelIdFromYoutubeId("ChannelID", "Channels", "UCe0TLA0EsQbE-MjuHXevj2A");
+            int athleanId = DbHandler.SelectIdFromYoutubeId("ChannelID", "Channels", "UCe0TLA0EsQbE-MjuHXevj2A");
             int myChannel = Convert.ToInt32(DbHandler.SelectColumnBySingleCondition("ChannelID", "Channels", "Title", "Gabe J"));
 
             DbHandler.DeleteSubscription(myChannel, athleanId);

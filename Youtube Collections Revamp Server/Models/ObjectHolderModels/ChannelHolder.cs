@@ -34,15 +34,15 @@ namespace YoutubeCollectionsRevampServer.Models.ObjectHolderModels
         {
             // Channel holder id is empty because we are populating from an API call
             ChannelHolderId = -1;
-            YoutubeId = channelResponse.Id.ToString().Trim();
-            Title = channelResponse.Snippet.Title.ToString().Trim();
+            YoutubeId = channelResponse.Id.Trim();
+            Title = channelResponse.Snippet.Title.Trim();
             // The database only holds up to 1000 characters
             // Solution from http://stackoverflow.com/a/3566842/1751481
-            Description = channelResponse.Snippet.Description.ToString().Trim();
+            Description = channelResponse.Snippet.Description.Trim();
             Description = Description.Substring(0, Math.Min(Description.Length, 1000));
 
-            UploadPlaylist = channelResponse.ContentDetails.RelatedPlaylists.Uploads.ToString().Trim();
-            Thumbnail = channelResponse.Snippet.Thumbnails.Medium.Url.ToString().Trim();
+            UploadPlaylist = channelResponse.ContentDetails.RelatedPlaylists.Uploads.Trim();
+            Thumbnail = channelResponse.Snippet.Thumbnails.Medium.Url.Trim();
             ViewCount = channelResponse.Statistics.ViewCount;
             SubscriberCount = channelResponse.Statistics.SubscriberCount;
             VideoCount = channelResponse.Statistics.VideoCount;

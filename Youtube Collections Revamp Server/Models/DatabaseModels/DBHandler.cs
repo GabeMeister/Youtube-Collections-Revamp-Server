@@ -75,11 +75,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             return value;
         }
 
-        #endregion
-        
-        // ============================ CHANNELS
-        #region CHANNELS
-        public static int SelectChannelIdFromYoutubeId(string idColumnToSelect, string table, string youtubeId)
+        public static int SelectIdFromYoutubeId(string idColumnToSelect, string table, string youtubeId)
         {
             int id = -1;
 
@@ -104,6 +100,11 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             return id;
         }
 
+        #endregion
+        
+        // ============================ CHANNELS
+        #region CHANNELS
+        
         public static void InsertChannel(ChannelHolder channel)
         {
             // We check if the same youtube channel id has already been inserted
@@ -135,7 +136,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                 }
 
                 // Get the channel id of the channel we just inserted
-                int channelId = SelectChannelIdFromYoutubeId("ChannelID", "Channels", channel.YoutubeId);
+                int channelId = SelectIdFromYoutubeId("ChannelID", "Channels", channel.YoutubeId);
 
                 InsertChannelIntoChannelsToDownload(channelId);
             }
@@ -278,6 +279,63 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         // ============================ SUBSCRIPTIONS
         #region SUBSCRIPTIONS
+
+        public static List<string> SelectYoutubeIdSubscriptionsForUser(int channelId)
+        {
+            var allSubscriptions = new List<string>();
+
+            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                var command = conn.CreateCommand();
+                command.CommandText = @"select 
+                                        c.YoutubeID
+                                        from Subscriptions s
+                                        inner join Channels c on c.ChannelID=s.BeingSubscribedToChannelID
+                                        where s.SubscriberChannelID=@ChannelID;";
+                command.Parameters.AddWithValue("@ChannelID", channelId);
+
+                var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    allSubscriptions.Add(reader["YoutubeID"].ToString().Trim());
+                }
+
+                conn.Close();
+            }
+
+            return allSubscriptions;
+        }
+
+        public static List<int> SelectSubscriptionChannelIdsForUser(int channelId)
+        {
+            var allSubscriptions = new List<int>();
+
+            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                var command = conn.CreateCommand();
+                command.CommandText = @"select 
+                                        c.ChannelID
+                                        from Subscriptions s
+                                        inner join Channels c on c.ChannelID=s.BeingSubscribedToChannelID
+                                        where s.SubscriberChannelID=@ChannelID;";
+                command.Parameters.AddWithValue("@ChannelID", channelId);
+
+                var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    allSubscriptions.Add(Convert.ToInt32(reader["ChannelID"].ToString().Trim()));
+                }
+
+                conn.Close();
+            }
+
+            return allSubscriptions;
+        }
+
         public static void InsertSubscription(int subscriberChannelId, int beingSubscribedToChannelId)
         {
             if (subscriberChannelId == -1 || beingSubscribedToChannelId == -1)
@@ -400,38 +458,55 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             }
         }
 
-        public static List<string> GetYoutubeIdSubscriptionsForUser(int channelId)
+        #endregion
+
+        // ============================ COLLECTIONS
+        #region COLLECTIONS
+        public static int SelectCollectionIdByChannelIdAndTitle(int channelId, string title)
         {
-            var allSubscriptions = new List<string>();
+            int collectionId = -1;
 
             using (var conn = new NpgsqlConnection(DatabaseConnStr))
             {
                 conn.Open();
 
                 var command = conn.CreateCommand();
-                command.CommandText = @"select 
-                                        c.YoutubeID
-                                        from Subscriptions s
-                                        inner join Channels c on c.ChannelID=s.BeingSubscribedToChannelID
-                                        where s.SubscriberChannelID=@ChannelID;";
-                command.Parameters.AddWithValue("@ChannelID", channelId);
+                command.CommandText = "select CollectionID from Collections where OwnerChannelID=@OwnerChannelID and Title=@Title;";
+                command.Parameters.AddWithValue("@OwnerChannelID", channelId);
+                command.Parameters.AddWithValue("@Title", title);
+
+                var reader = command.ExecuteReader();
+                reader.Read();
+                collectionId = Convert.ToInt32(reader["CollectionID"].ToString().Trim());
+
+                conn.Close();
+            }
+
+            return collectionId;
+        }
+
+        public static List<int> SelectCollectionIdsForUser(int channelId)
+        {
+            var collectionIds = new List<int>();
+            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                var command = conn.CreateCommand();
+                command.CommandText = "select CollectionID from Collections where OwnerChannelID=@OwnerChannelID;";
+                command.Parameters.AddWithValue("@OwnerChannelID", channelId);
 
                 var reader = command.ExecuteReader();
                 while (reader.Read())
                 {
-                    allSubscriptions.Add(reader["YoutubeID"].ToString().Trim());
+                    collectionIds.Add(Convert.ToInt32(reader["CollectionID"].ToString().Trim()));
                 }
 
                 conn.Close();
             }
 
-            return allSubscriptions;
+            return collectionIds;
         }
-
-        #endregion
-
-        // ============================ COLLECTIONS
-        #region COLLECTIONS
 
         public static void InsertCollection(CollectionHolder collection)
         {
@@ -568,33 +643,64 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
         }
 
-        public static int SelectCollectionIdByChannelIdAndTitle(int channelId, string title)
-        {
-            int collectionId = -1;
-
-            using (var conn = new NpgsqlConnection(DatabaseConnStr))
-            {
-                conn.Open();
-
-                var command = conn.CreateCommand();
-                command.CommandText = "select CollectionID from Collections where OwnerChannelID=@OwnerChannelID and Title=@Title;";
-                command.Parameters.AddWithValue("@OwnerChannelID", channelId);
-                command.Parameters.AddWithValue("@Title", title);
-
-                var reader = command.ExecuteReader();
-                reader.Read();
-                collectionId = Convert.ToInt32(reader["CollectionID"].ToString().Trim());
-
-                conn.Close();
-            }
-
-            return collectionId;
-        }
+        
 
         #endregion
 
         // ============================ COLLECTION ITEMS
         #region COLLECTION ITEMS
+        public static List<int> SelectCollectionItemsByCollectionId(int collectionId)
+        {
+            var collectionItemIds = new List<int>();
+            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                var command = conn.CreateCommand();
+                command.CommandText = "select ItemChannelID from CollectionItems where CollectionId=@CollectionId;";
+                command.Parameters.AddWithValue("@CollectionId", collectionId);
+
+                var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    int collectionItemId = Convert.ToInt32(reader["ItemChannelID"].ToString());
+                    collectionItemIds.Add(collectionItemId);
+                }
+
+                conn.Close();
+            }
+
+            return collectionItemIds;
+        }
+
+        public static List<string> SelectCollectionItemNamesByCollectionId(int collectionId)
+        {
+            var collectionItemNames = new List<string>();
+            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                var command = conn.CreateCommand();
+                command.CommandText = @"select ch.Title
+                                        from Collections co
+                                        inner join CollectionItems ci on ci.CollectionID=co.CollectionID
+                                        inner join Channels ch on ch.ChannelID=ci.ItemChannelID
+                                        where co.CollectionID=@CollectionID;";
+                command.Parameters.AddWithValue("@CollectionId", collectionId);
+
+                var reader = command.ExecuteReader();
+                while (reader.Read())
+                {
+                    string channelName = reader["Title"].ToString().Trim();
+                    collectionItemNames.Add(channelName);
+                }
+
+                conn.Close();
+            }
+
+            return collectionItemNames;
+        }
+
         public static void InsertCollectionItem(CollectionItemHolder collectionItem)
         {
             if (!DoesIdExist("Collections", "CollectionID", collectionItem.CollectionId))
@@ -806,34 +912,59 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             }
         }
 
-        public static List<int> SelectCollectionItemsByCollectionId(int collectionId)
-        {
-            var collectionItemIds = new List<int>();
-            using (var conn = new NpgsqlConnection(DatabaseConnStr))
-            {
-                conn.Open();
-
-                var command = conn.CreateCommand();
-                command.CommandText = "select ItemChannelID from CollectionItems where CollectionId=@CollectionId;";
-                command.Parameters.AddWithValue("@CollectionId", collectionId);
-
-                var reader = command.ExecuteReader();
-                while (reader.Read())
-                {
-                    int collectionItemId = Convert.ToInt32(reader["ItemChannelID"].ToString());
-                    collectionItemIds.Add(collectionItemId);
-                }
-
-                conn.Close();
-            }
-
-            return collectionItemIds;
-        }
+        
 
         #endregion
 
         // ============================ VIDEOS
         #region VIDEOS
+        
+        public static List<VideoHolder> SelectVideoInformationForVideoIds(List<int> videoIds)
+        {
+            if (!videoIds.Any())
+            {
+                // Just return nothing if no video ids were given to us
+                return new List<VideoHolder>();
+            }
+
+            var collectionVideoInfo = new List<VideoHolder>();
+            using (var conn = new NpgsqlConnection(DatabaseConnStr))
+            {
+                conn.Open();
+
+                var command = conn.CreateCommand();
+                string[] videoPlaceHolders = new string[videoIds.Count];
+                for (int i = 0; i < videoIds.Count; i++)
+                {
+                    videoPlaceHolders[i] = string.Format("@Video{0}", i);
+                    command.Parameters.AddWithValue(videoPlaceHolders[i], videoIds[i]);
+                }
+                command.CommandText =
+                    string.Format(@"select v.YoutubeID, 
+                                            v.ChannelID, 
+                                            v.Title, 
+                                            v.Thumbnail, 
+                                            v.Duration, 
+                                            v.ViewCount, 
+                                            v.PublishedAt, 
+                                            c.Title as ChannelTitle
+                                            from Videos v 
+                                            inner join Channels c on v.ChannelID=c.ChannelID
+                                            where v.VideoID in ({0});", string.Join(",", videoPlaceHolders));
+                var reader = command.ExecuteReader();
+
+                while (reader.Read())
+                {
+                    var video = new VideoHolder(reader);
+                    collectionVideoInfo.Add(video);
+                }
+
+                conn.Close();
+            }
+
+            return collectionVideoInfo;
+        }
+
         public static void InsertVideo(VideoHolder video)
         {
             // We check if the same youtube channel id has already been inserted
@@ -846,7 +977,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 
                     // Have to get the actual channel id first, from the youtube id
                     // The channel id may or may not be in database already
-                    video.ChannelId = Convert.ToUInt64(SelectChannelIdFromYoutubeId("ChannelID", "Channels", video.YoutubeChannelId));
+                    video.ChannelId = Convert.ToUInt64(SelectIdFromYoutubeId("ChannelID", "Channels", video.YoutubeChannelId));
                     Debug.Assert(video.ChannelId > 0, "Inserting video of non-existant channel. Channel must have been already inserted before this point.");
 
                     Debug.WriteLine(video.Title);
@@ -915,53 +1046,6 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             }
         }
 
-        public static List<VideoHolder> SelectVideoInformationForVideoIds(List<int> videoIds)
-        {
-            if (!videoIds.Any())
-            {
-                // Just return nothing if no video ids were given to us
-                return new List<VideoHolder>();
-            }
-
-            var collectionVideoInfo = new List<VideoHolder>();
-            using (var conn = new NpgsqlConnection(DatabaseConnStr))
-            {
-                conn.Open();
-
-                var command = conn.CreateCommand();
-                string[] videoPlaceHolders = new string[videoIds.Count];
-                for (int i = 0; i < videoIds.Count; i++)
-                {
-                    videoPlaceHolders[i] = string.Format("@Video{0}", i);
-                    command.Parameters.AddWithValue(videoPlaceHolders[i], videoIds[i]);
-                }
-                command.CommandText =
-                    string.Format(@"select v.YoutubeID, 
-                                            v.ChannelID, 
-                                            v.Title, 
-                                            v.Thumbnail, 
-                                            v.Duration, 
-                                            v.ViewCount, 
-                                            v.PublishedAt, 
-                                            c.Title as ChannelTitle
-                                            from Videos v 
-                                            inner join Channels c on v.ChannelID=c.ChannelID
-                                            where v.VideoID in ({0});", string.Join(",", videoPlaceHolders));
-                var reader = command.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    var video = new VideoHolder(reader);
-                    collectionVideoInfo.Add(video);
-                }
-
-                conn.Close();
-            }
-
-            return collectionVideoInfo;
-        }
-
-
         #endregion
 
         // ============================ WATCHED VIDEOS
@@ -1017,7 +1101,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             return doesExist;
         }
 
-        public static IEnumerable<string> GetWatchedVideosForUser(int channelId, List<int> youtubeVideoIds)
+        public static IEnumerable<string> SelectWatchedVideosForUser(int channelId, List<int> youtubeVideoIds)
         {
             var watchedYoutubeIds = new List<string>();
 
@@ -1050,7 +1134,7 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
             return watchedYoutubeIds;
         }
 
-        public static IEnumerable<string> GetUnwatchedVideosForUser(int channelId, List<int> relatedVideoIds)
+        public static IEnumerable<string> SelectUnwatchedVideosForUser(int channelId, List<int> relatedVideoIds)
         {
             if (!relatedVideoIds.Any())
             {

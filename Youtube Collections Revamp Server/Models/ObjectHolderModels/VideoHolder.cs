@@ -37,13 +37,13 @@ namespace YoutubeCollectionsRevampServer.Models.ObjectHolderModels
         {
             // Can't assign the actual id because we are populating from an API response
             VideoHolderId = 0;
-            YoutubeId = videoResponse.Id.ToString().Trim();
+            YoutubeId = videoResponse.Id.Trim();
             // Can't assign the actual channel id because we are populating from an API response
             ChannelId = 0;
-            ChannelTitle = videoResponse.Snippet.ChannelTitle.ToString().Trim();
-            YoutubeChannelId = videoResponse.Snippet.ChannelId.ToString().Trim();
-            Title = videoResponse.Snippet.Title.ToString().Trim();
-            Thumbnail = videoResponse.Snippet.Thumbnails.Medium.Url.ToString().Trim();
+            ChannelTitle = videoResponse.Snippet.ChannelTitle.Trim();
+            YoutubeChannelId = videoResponse.Snippet.ChannelId.Trim();
+            Title = videoResponse.Snippet.Title.Trim();
+            Thumbnail = videoResponse.Snippet.Thumbnails.Medium.Url.Trim();
             // We don't want the ISO format, "PT2m34s". We want the Timespan format: "00:02:34"
             Duration = XmlConvert.ToTimeSpan(videoResponse.ContentDetails.Duration).ToString().Trim();
             ViewCount = videoResponse.Statistics.ViewCount;

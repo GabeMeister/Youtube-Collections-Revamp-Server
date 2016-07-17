@@ -25,6 +25,12 @@ namespace YoutubeCollectionsRevampServer
             // TODO
         }
 
+        public void SyncUserData(string userYoutubeId)
+        {
+            YoutubeTasks.SyncUserData(this, userYoutubeId);
+            Clients.Caller.onEventCompleted();
+        }
+
         #endregion
 
         #region Collection Items
@@ -66,6 +72,7 @@ namespace YoutubeCollectionsRevampServer
         public void UpdateSubscriptions(string userYoutubeId)
         {
             YoutubeTasks.UpdateSubscriptions(this, userYoutubeId);
+            Clients.Caller.onSubscriptionsUpdated();
         }
 
         #endregion
@@ -171,6 +178,16 @@ namespace YoutubeCollectionsRevampServer
         public void NotifyCallerOfExistingYoutubeId()
         {
             Clients.Caller.onYoutubeIdAlreadyExists();
+        }
+
+        public void NotifyCallerOfCollectionSync(SignalRMessage message)
+        {
+            Clients.Caller.onCollectionSync(message);
+        }
+
+        public void NotifyCallerOfSubscriptionSync(SignalRMessage message)
+        {
+            Clients.Caller.onSubscriptionSync(message);
         }
 
         #endregion
