@@ -79,7 +79,7 @@ namespace YoutubeCollectionsRevampServerUnitTests
         [TestMethod]
         public void DeleteUserFromDatabase()
         {
-            YoutubeTasks.CompletelyDeleteChannel("UC4LVLoBN0xbOb5xJuA0ia9A");
+            YoutubeTasks.CompletelyDeleteChannel("UCZzpPbDsnio4g3oKwgNBd7A");
         }
 
         #endregion

@@ -53,7 +53,8 @@ where ch.Title='Gabe J';
 -- All Collections showing channels with it
 select coll.CollectionID,coll.OwnerChannelID,ch.Title,coll.Title 
 from Collections coll
-inner join Channels ch on ch.ChannelID = coll.OwnerChannelID;
+inner join Channels ch on ch.ChannelID = coll.OwnerChannelID
+order by ch.Title,coll.Title;
 
 
 -- Particular collection for user
@@ -120,7 +121,11 @@ order by v.PublishedAt desc
 limit 5;
 
 
+select * from CollectionItems ci
+inner join Channels ch on ch.ChannelID=ci.ItemChannelID;
 
-
+select ItemChannelID from CollectionItems
+group by ItemChannelID
+order by ItemChannelID;
 
 
