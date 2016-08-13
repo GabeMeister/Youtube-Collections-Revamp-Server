@@ -1,14 +1,45 @@
 ﻿select * from Channels limit 10;
 
 
+
+
+
+
+
 select count(*) from Channels;
+
+
+
+
+
+
 
 
 delete from Channels;
 
 
+
+
+
+
+
 select * from Channels
 where Title='Gabe J';
+
+
+
+
+
+
+
+select * from Channels
+where Title like '%Collier Mayo%';
+
+
+
+
+
+
 
 
 select 
@@ -17,6 +48,11 @@ from Channels ch
 inner join Collections coll
 on ch.ChannelID=coll.OwnerChannelID
 where ch.YoutubeID='UC4LVLoBN0xbOb5xJuA0ia9A';
+
+
+
+
+
 
 
 select 
@@ -28,6 +64,12 @@ on c.channelid=v.channelid
 where c.ChannelID=76;
 
 
+
+
+
+
+
+
 select 
 c.Title,c.YoutubeID,c.ChannelID,count(*)
 from channels c
@@ -36,6 +78,10 @@ on c.channelid=v.channelid
 -- where c.YoutubeID='UC8-Th83bH_thdKZDJCrn88g'
 group by c.ChannelID
 order by count(*) desc;
+
+
+
+
 
 
 select 

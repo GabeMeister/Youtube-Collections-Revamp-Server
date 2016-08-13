@@ -15,6 +15,10 @@ inner join Channels c on c.ChannelID=v.ChannelID
 group by c.ChannelID
 order by c.ChannelID;
 
+select * from Videos v
+inner join Channels ch on ch.ChannelID=v.ChannelID
+where ch.Title like '%MLB%';
+
 
 update Videos set Title='Atomtot - Abschaum',
 Thumbnail='https://i.ytimg.com/vi/k7hBcVg6-Cs/mqdefault.jpg',

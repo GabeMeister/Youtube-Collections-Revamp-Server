@@ -12,8 +12,14 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
 {
     public class DbHandler
     {
+        // Local host database
         //public static string DatabaseConnStr = @"Server=127.0.0.1;Port=5432;User Id=postgres;Password=4321;Database=YoutubeCollections";
-        public static string DatabaseConnStr = @"Server=104.40.49.186;Port=5432;User Id=gabemeister;Password=qwerqwer1234!;Database=youtubecollections";
+
+        // Azure database (which I stopped because it's too expensive)
+        //public static string DatabaseConnStr = @"Server=104.40.49.186;Port=5432;User Id=gabemeister;Password=qwerqwer1234!;Database=youtubecollections";
+
+        // Digital Ocean database, which is currently being used
+        public static string DatabaseConnStr = @"Server=104.236.163.200;Port=5432;User Id=gabemeister;Password=qwerQWER1234!;Database=youtubecollections";
 
         // ============================ GENERAL
         #region GENERAL
