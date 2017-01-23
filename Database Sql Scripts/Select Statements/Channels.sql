@@ -24,7 +24,19 @@ delete from Channels;
 
 
 select * from Channels
-where Title='Gabe J';
+where Title like '%Red Bull%';
+
+
+
+
+
+
+
+select 
+* 
+from Channels c
+where c.ChannelID=60232;
+
 
 
 
@@ -91,7 +103,7 @@ where viewcount=videocount
 and videoCount != 0;
 
 
-
+select ChannelID,VideoCount from Channels where ChannelID = ANY('{62830,62831,62832,62833,62834,62835,62836,16026,60844,38099}')
 
 
 

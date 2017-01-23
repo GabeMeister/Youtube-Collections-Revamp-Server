@@ -37,16 +37,15 @@ where ch.Title like '%Ethan Cabbage%';
 
 -- All Collection Items
 select
-channelItem.ChannelID,
 channelItem.Title,
+co.Title,
 ownerChannel.Title,
-ownerChannel.YoutubeID,
-co.Title
+ownerChannel.YoutubeID
 from CollectionItems ci
 inner join Collections co on co.CollectionID=ci.CollectionID
 inner join Channels ownerChannel on ownerChannel.ChannelID=co.OwnerChannelID
 inner join Channels channelItem on channelItem.ChannelID=ci.ItemChannelID
-order by ownerChannel.Title,channelItem.Title;
+order by ownerChannel.Title,co.Title,channelItem.Title;
 
 
 
