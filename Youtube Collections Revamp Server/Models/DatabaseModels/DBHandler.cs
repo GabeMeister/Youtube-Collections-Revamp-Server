@@ -1239,8 +1239,13 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                 conn.Open();
 
                 var command = conn.CreateCommand();
-                command.CommandText = string.Format("select {0} from {1} where {0}=@id limit 1;", idColumnName, table);
-                command.Parameters.AddWithValue("@id", id);
+
+                // TODO: change back to use parameters
+                // Temporarily just concatenating a string together.
+                // See https://stackoverflow.com/questions/41829625/very-slow-performance-when-using-npgsql-parameters
+                command.CommandText = string.Format("select {0} from {1} where {0}='{2}' limit 1;", idColumnName, table, id);
+                //command.CommandText = string.Format("select {0} from {1} where {0}=@id limit 1;", idColumnName, table);
+                //command.Parameters.AddWithValue("@id", id);
 
                 var reader = command.ExecuteReader();
                 if (reader.Read())
