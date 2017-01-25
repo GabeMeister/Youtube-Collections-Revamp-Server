@@ -9,10 +9,6 @@ select count(*) from Videos;
 
 
 
-create index video_index_by_channel_id on Videos(channelid);
-
-
-
 
 -- before: 4000126
 
@@ -54,19 +50,47 @@ order by v.PublishedAt desc;
 
 
 
-select * from videos limit 1;
-
-
-
-
-
-
 
 update Videos set Title='Atomtot - Abschaum',
 Thumbnail='https://i.ytimg.com/vi/k7hBcVg6-Cs/mqdefault.jpg',
 Duration='00:02:38',
 ViewCount=195
 where VideoID=1431468;
+
+
+
+
+
+CREATE INDEX ordervideosbychannelid
+  ON videos
+  USING btree
+  (channelid);
+
+
+
+
+create index videosbyyoutubeid 
+on videos(youtubeid);
+
+
+
+select * from videos where youtubeid='DDBAOgVI8F4' limit 1;
+-- select * from videos where videoid=15049089;
+
+
+select YoutubeID from Videos where YoutubeID='veNzizrC99E' limit 1;
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

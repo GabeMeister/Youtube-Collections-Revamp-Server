@@ -97,10 +97,15 @@ order by count(*) desc;
 
 
 select 
-Title,VideoCount,ViewCount
+ChannelID, Title,VideoCount
 from Channels 
 where viewcount=videocount 
-and videoCount != 0;
+and videoCount != 0
+order by videocount desc;
+
+
+
+
 
 
 select ChannelID,VideoCount from Channels where ChannelID = ANY('{62830,62831,62832,62833,62834,62835,62836,16026,60844,38099}')
