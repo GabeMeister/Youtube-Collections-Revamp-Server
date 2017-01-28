@@ -87,8 +87,9 @@ namespace YoutubeCollectionsRevampServer.Models.DatabaseModels
                 conn.Open();
 
                 var command = conn.CreateCommand();
-                command.CommandText = string.Format("select {0} from {1} where YoutubeID=@YoutubeID limit 1;", idColumnToSelect, table);
-                command.Parameters.AddWithValue("@YoutubeID", youtubeId);
+                // TODO: Change back to use parameters
+                command.CommandText = string.Format("select {0} from {1} where YoutubeID='{2}' limit 1;", idColumnToSelect, table, youtubeId);
+                //command.Parameters.AddWithValue("@YoutubeID", youtubeId);
 
                 var reader = command.ExecuteReader();
                 if (reader.HasRows)
