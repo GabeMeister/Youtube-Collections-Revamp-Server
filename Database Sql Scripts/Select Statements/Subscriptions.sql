@@ -1,4 +1,4 @@
-﻿select * from Subscriptions s;
+﻿select * from Subscriptions s limit 10;
 
 
 

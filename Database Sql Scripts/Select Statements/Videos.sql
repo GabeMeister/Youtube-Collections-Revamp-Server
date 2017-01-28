@@ -78,14 +78,16 @@ select * from videos where youtubeid='DDBAOgVI8F4' limit 1;
 -- select * from videos where videoid=15049089;
 
 
-select YoutubeID from Videos where YoutubeID='veNzizrC99E' limit 1;
+select YoutubeID from Videos where YoutubeID='LrMSlqFsmr0' limit 1;
 
 
 
 
-
-
-
+select * from Channels where YoutubeID='UCqG4BLgo8VyK4LK8tXRqDVg';
+select * from videos where channelid=64928;
+select * from ChannelsToDownload where channelid=64928;
+delete from ChannelsToDownload where channelid=64928;
+select count(*) from channelstodownload;
 
 
 

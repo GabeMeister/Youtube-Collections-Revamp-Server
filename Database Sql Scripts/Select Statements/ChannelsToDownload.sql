@@ -1,7 +1,16 @@
-﻿select * from ChannelsToDownload;
+﻿select * from ChannelsToDownload limit 10;
+
+
+
+
+
 
 
 select count(*) from ChannelsToDownload;
+
+
+
+
 
 
 -- delete from ChannelsToDownload
@@ -20,7 +29,7 @@ order by ch.Title;
 
 insert into ChannelsToDownload (ChannelID) values (30338);
 
-
+select * from Channels where CHannelID=62736;
 
 
 
