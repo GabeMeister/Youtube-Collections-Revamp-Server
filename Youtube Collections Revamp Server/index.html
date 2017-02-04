@@ -10,7 +10,7 @@
     <script src="Scripts/jquery-2.2.1.js"></script>
     <script src="Scripts/jquery.signalR-2.2.0.js"></script>
     <script>
-         var HUB_SERVER_URL = 'https://youtubecollectionsrevampserver.azurewebsites.net/signalr';
+        var HUB_SERVER_URL = 'https://youtubecollectionsrevampserver.azurewebsites.net/signalr';
         //var HUB_SERVER_URL = 'http://localhost:3851/signalr';
         var _hubConnection = $.hubConnection(HUB_SERVER_URL);
         var _hub = _hubConnection.createHubProxy('YoutubeCollectionsServer');

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.AspNet.SignalR;
 using Microsoft.AspNet.SignalR.Hubs;
 using YoutubeCollectionsRevampServer.Models.SignalRMessaging;
@@ -147,6 +148,7 @@ namespace YoutubeCollectionsRevampServer
 
         public void SendCollectionVideos(SignalRMessage message)
         {
+            Trace.TraceInformation("SendCollectionVideos({0})", message.Message);
             Clients.Caller.onRelatedVideosChange(message);
         }
 
@@ -183,6 +185,11 @@ namespace YoutubeCollectionsRevampServer
         public void NotifyCallerOfSubscriptionSync(SignalRMessage message)
         {
             Clients.Caller.onSubscriptionSync(message);
+        }
+
+        public void NotifyCallerOfError(SignalRMessage message)
+        {
+            Clients.Caller.onErrorOccurred(message);
         }
 
         #endregion
